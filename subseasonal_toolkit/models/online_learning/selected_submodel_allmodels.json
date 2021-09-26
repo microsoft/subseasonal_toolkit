@@ -1,0 +1,74 @@
+{
+  "contest_precip_34w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "contest_precip_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "contest_tmp2m_34w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "contest_tmp2m_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_precip_34w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_precip_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_tmp2m_34w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_tmp2m_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  }
+}

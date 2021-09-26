@@ -1,0 +1,22 @@
+{
+  "contest_precip_34w":
+  {
+    "num_years": "all",
+    "margin_in_days": "None"
+  },
+  "contest_precip_56w":
+  {
+    "num_years": "all",
+    "margin_in_days": "None"
+  },
+  "contest_tmp2m_34w":
+  {
+    "num_years": "all",
+    "margin_in_days": "None"
+  },
+  "contest_tmp2m_56w":
+  {
+    "num_years": "all",
+    "margin_in_days": "None"
+  }
+}

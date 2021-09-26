@@ -1,0 +1,34 @@
+{
+  "contest_precip_34w":
+  {
+    "sn": "d2wk_cop_sst_mei"
+  },
+  "contest_precip_56w":
+  {
+    "sn": "d2wk_cop_sst_mei"
+  },
+  "contest_tmp2m_34w":
+  {
+    "sn": "d2wk_cop_sst_mei"
+  },
+  "contest_tmp2m_56w":
+  {
+    "sn": "d2wk_cop_sst_mei"
+  },
+  "us_precip_34w":
+  {
+    "sn": "d2wk_cop_sst_mei"
+  },
+  "us_precip_56w":
+  {
+    "sn": "d2wk_cop_sst_mei"
+  },
+  "us_tmp2m_34w":
+  {
+    "sn": "d2wk_cop_sst_mei"
+  },
+  "us_tmp2m_56w":
+  {
+    "sn": "d2wk_cop_sst_mei"
+  }
+}

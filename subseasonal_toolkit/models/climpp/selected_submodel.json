@@ -1,0 +1,75 @@
+{
+  "contest_precip_12w":
+  {
+    "loss": "mse",
+    "num_years": "all",
+    "margin_in_days": 10
+  },
+  "contest_precip_34w":
+  {
+    "loss": "mse",
+    "num_years": "all",
+    "margin_in_days": 10
+  },
+  "contest_precip_56w":
+  {
+    "loss": "mse",
+    "num_years": "all",
+    "margin_in_days": 10
+  },
+  "contest_tmp2m_12w":
+  {
+    "loss": "rmse",
+    "num_years": 29,
+    "margin_in_days": 10
+  },
+  "contest_tmp2m_34w":
+  {
+    "loss": "rmse",
+    "num_years": 29,
+    "margin_in_days": 10
+  },
+  "contest_tmp2m_56w":
+  {
+    "loss": "rmse",
+    "num_years": 29,
+    "margin_in_days": 10
+  },
+  "us_precip_12w":
+  {
+    "loss": "mse",
+    "num_years": "all",
+    "margin_in_days": 10
+  },
+  "us_precip_34w":
+  {
+    "loss": "mse",
+    "num_years": "all",
+    "margin_in_days": 10
+  },
+  "us_precip_56w":
+  {
+    "loss": "mse",
+    "num_years": "all",
+    "margin_in_days": 10
+  },
+  "us_tmp2m_12w":
+  {
+    "loss": "rmse",
+    "num_years": 29,
+    "margin_in_days": 10
+  },
+  "us_tmp2m_34w":
+  {
+    "loss": "rmse",
+    "num_years": 29,
+    "margin_in_days": 10
+  },
+  "us_tmp2m_56w":
+  {
+    "loss": "rmse",
+    "num_years": 29,
+    "margin_in_days": 10
+  }
+}
+

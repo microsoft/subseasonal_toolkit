@@ -1,0 +1,66 @@
+{
+    "contest_precip_34w": {
+        "n_features" : "10",
+        "iterations" : "50",
+        "depth" : "2",
+        "learning_rate" : "0.17",
+        "region_extension" : "3",
+        "margin_of_days" : "56"
+    },
+    "contest_precip_56w": {
+        "n_features" : "10",
+        "iterations" : "50",
+        "depth" : "2",
+        "learning_rate" : "0.17",
+        "region_extension" : "3",
+        "margin_of_days" : "56"
+    },
+    "contest_tmp2m_34w": {
+        "n_features" : "10",
+        "iterations" : "50",
+        "depth" : "2",
+        "learning_rate" : "0.17",
+        "region_extension" : "3",
+        "margin_of_days" : "56"
+    },
+    "contest_tmp2m_56w": {
+        "n_features" : "10",
+        "iterations" : "50",
+        "depth" : "2",
+        "learning_rate" : "0.17",
+        "region_extension" : "3",
+        "margin_of_days" : "56"
+    },
+    "us_precip_34w": {
+        "n_features" : "10",
+        "iterations" : "50",
+        "depth" : "2",
+        "learning_rate" : "0.17",
+        "region_extension" : "3",
+        "margin_of_days" : "56"
+    },
+    "us_precip_56w": {
+        "n_features" : "10",
+        "iterations" : "50",
+        "depth" : "2",
+        "learning_rate" : "0.17",
+        "region_extension" : "3",
+        "margin_of_days" : "56"
+	},
+    "us_tmp2m_34w": {
+        "n_features" : "10",
+        "iterations" : "50",
+        "depth" : "2",
+        "learning_rate" : "0.17",
+        "region_extension" : "3",
+        "margin_of_days" : "56"
+    },
+    "us_tmp2m_56w": {
+        "n_features" : "10",
+        "iterations" : "50",
+        "depth" : "2",
+        "learning_rate" : "0.17",
+        "region_extension" : "3",
+        "margin_of_days" : "56"
+    }
+}

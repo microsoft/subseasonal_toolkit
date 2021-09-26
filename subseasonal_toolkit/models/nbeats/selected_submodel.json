@@ -1,0 +1,35 @@
+{
+  "contest_precip_34w":
+  {
+    "sn": "first_model_hparam"
+  },
+  "contest_precip_56w":
+  {
+    "sn": "first_model_hparam"
+  },
+  "contest_tmp2m_34w":
+  {
+    "sn": "first_model_hparam" 
+  },
+  "contest_tmp2m_56w":
+  {
+    "sn": "first_model_hparam"
+  },
+  "us_precip_34w":
+  {
+    "sn": "us_model_hparam"
+  },
+  "us_precip_56w":
+  {
+    "sn": "us_model_hparam"
+  },
+  "us_tmp2m_34w":
+  {
+    "sn": "us_model_hparam"
+  },
+  "us_tmp2m_56w":
+  {
+    "sn": "us_model_hparam"
+  }
+}
+

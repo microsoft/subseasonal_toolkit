@@ -1,0 +1,42 @@
+{
+  "contest_precip_34w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "contest_precip_56w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "contest_tmp2m_34w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "contest_tmp2m_56w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "us_precip_34w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "us_precip_56w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "us_tmp2m_34w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "us_tmp2m_56w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  }
+}

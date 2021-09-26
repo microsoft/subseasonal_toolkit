@@ -1,0 +1,38 @@
+{
+    "contest_tmp2m_34w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "contest_tmp2m_56w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "contest_precip_34w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "contest_precip_56w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "us_tmp2m_34w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "us_tmp2m_56w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "us_precip_34w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "us_precip_56w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "us_tmp2m_1.5x1.5_34w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "us_tmp2m_1.5x1.5_56w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "us_precip_1.5x1.5_34w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    },
+    "us_precip_1.5x1.5_56w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp"
+    }
+}

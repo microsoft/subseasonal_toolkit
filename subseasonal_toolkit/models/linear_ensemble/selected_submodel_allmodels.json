@@ -1,0 +1,26 @@
+{
+    "contest_tmp2m_34w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet"
+    },
+    "contest_tmp2m_56w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet"
+    },
+    "contest_precip_34w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet"
+    },
+    "contest_precip_56w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet"
+    },
+    "us_tmp2m_34w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet"
+    },
+    "us_tmp2m_56w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet"
+    },
+    "us_precip_34w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet"
+    },
+    "us_precip_56w": {
+        "model_names": "tuned_cfsv2pp,tuned_climpp,perpp,autoknn,tuned_localboosting,multillr,tuned_salient2,prophet"
+    }
+}

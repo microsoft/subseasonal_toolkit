@@ -1,0 +1,68 @@
+{
+    "contest_precip_34w":
+    {
+        "history": 60,
+        "lag": 365,
+        "num_neighbors": 1,
+        "metric": "rmse",
+        "margin_in_days": 56
+    },
+    "contest_precip_56w":
+    {
+        "history": 60,
+        "lag": 365,
+        "num_neighbors": 1,
+        "metric": "rmse",
+        "margin_in_days": 56
+    },
+    "contest_tmp2m_34w":
+    {
+        "history": 60,
+        "lag": 365,
+        "num_neighbors": 20,
+        "metric": "rmse",
+        "margin_in_days": null
+    },
+    "contest_tmp2m_56w":
+    {
+        "history": 60,
+        "lag": 365,
+        "num_neighbors": 20,
+        "metric": "rmse",
+        "margin_in_days": null
+    },
+    "us_precip_34w":
+    {
+        "history": 60,
+        "lag": 365,
+        "num_neighbors": 1,
+        "metric": "cos",
+        "margin_in_days": 56
+    },
+    "us_precip_56w":
+    {
+        "history": 60,
+        "lag": 365,
+        "num_neighbors": 1,
+        "metric": "cos",
+        "margin_in_days": 56
+    },
+    "us_tmp2m_34w":
+    {
+        "history": 60,
+        "lag": 365,
+        "num_neighbors": 20,
+        "metric": "rmse",
+        "margin_in_days": null
+    },
+    "us_tmp2m_56w":
+    {
+        "history": 60,
+        "lag": 365,
+        "num_neighbors": 20,
+        "metric": "rmse",
+        "margin_in_days": null
+    }
+}
+  
+  

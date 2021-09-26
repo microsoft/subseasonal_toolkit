@@ -1,0 +1,120 @@
+{
+  "contest_precip_34w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "contest_precip_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "contest_tmp2m_34w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "contest_tmp2m_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_precip_34w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_precip_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_tmp2m_34w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_tmp2m_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_tmp2m_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_precip_1.5x1.5_34w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "ah",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_ecmwf"
+  },
+  "us_precip_1.5x1.5_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "ah",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_ecmwf"
+  },
+  "us_tmp2m_1.5x1.5_34w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "ah",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_ecmwf"
+  },
+  "us_tmp2m_1.5x1.5_56w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "alg": "ah",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_ecmwf"
+  }
+}
+

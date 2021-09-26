@@ -1,0 +1,36 @@
+{
+    "contest":
+    {
+        "default":
+        {
+            "memory": 3,
+            "cores": 1,
+            "hours": 1,
+            "minutes": 0
+        },
+        "single_target":
+        {
+            "memory": 3,
+            "cores": 1,
+            "hours": 0,
+            "minutes": 10
+        }
+    },
+    "us":
+    {
+        "default":
+        {
+            "memory": 3,
+            "cores": 1,
+            "hours": 1,
+            "minutes": 0
+        },
+        "single_target":
+        {
+            "memory": 3,
+            "cores": 1,
+            "hours": 0,
+            "minutes": 10
+        }
+    }
+}
