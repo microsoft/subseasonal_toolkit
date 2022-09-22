@@ -1,0 +1,12 @@
+{
+    "s2s":
+    {
+        "default":
+        {
+            "memory": 24,
+            "cores": 1,
+            "hours": 1,
+            "minutes": 0
+        }
+    }
+}

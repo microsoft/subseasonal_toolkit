@@ -84,19 +84,22 @@ def get_model_shortcode(model_list):
     Get shortcode for the models, passed in as a list of strings
     """
     shortcode_dict = {
-        "tuned_localboosting": "tK",
-        "tuned_cfsv2pp": "tC",
-        "tuned_climpp": "tD",
-        "perpp": "L",
-        "multillr": "M",
-        "tuned_salient2": "tS"
+#         "tuned_localboosting": "tK",
+#         "tuned_cfsv2pp": "tC",
+#         "tuned_climpp": "tD",
+#         "tuned_ecmwfpp": "tE",
+#         "perpp": "L",
+#         "perpp_ecmwf": "pE",
+#         "multillr": "M",
+#         "tuned_salient2": "tS"
     }
     model_str = ""
     for m in model_list:
         if m in shortcode_dict:
             model_str += shortcode_dict[m] 
         else:
-            model_str += m[0].upper()
+            for i, mp in enumerate(m.split("_")):
+                model_str += mp[0].upper() if i==0 else mp[:2]
     return model_str
 
 def get_alg_shortcode(alg_str):

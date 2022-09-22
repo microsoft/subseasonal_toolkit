@@ -1,0 +1,164 @@
+{
+    "contest_precip_12w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 1,
+	"last_lead": 1,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "contest_precip_34w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 15,
+	"last_lead": 15,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "contest_precip_56w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 29,
+	"last_lead": 29,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "contest_tmp2m_12w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 1,
+	"last_lead": 1,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "contest_tmp2m_34w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 15,
+	"last_lead": 15,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "contest_tmp2m_56w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 29,
+	"last_lead": 29,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_precip_12w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 1,
+	"last_lead": 1,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_precip_34w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 15,
+	"last_lead": 15,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_precip_56w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 29,
+	"last_lead": 29,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_tmp2m_12w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 1,
+	"last_lead": 1,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_tmp2m_34w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 15,
+	"last_lead": 15,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_tmp2m_56w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 29,
+	"last_lead": 29,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_precip_1.5x1.5_12w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 1,
+	"last_lead": 1,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_precip_1.5x1.5_34w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 15,
+	"last_lead": 15,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_precip_1.5x1.5_56w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 29,
+	"last_lead": 29,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_tmp2m_1.5x1.5_12w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 1,
+	"last_lead": 1,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_tmp2m_1.5x1.5_34w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 15,
+	"last_lead": 15,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    },
+    "us_tmp2m_1.5x1.5_56w":
+    {
+	"train_years": 20,
+	"loss": "mse",
+	"first_lead": 29,
+	"last_lead": 29,
+    "forecast_with": "p",
+    "debias_with": "p+c"
+    }
+}

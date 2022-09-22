@@ -112,8 +112,8 @@ class S2SEnvironment(Environment):
         if X_t is None:
             return None
 
-        X_t = X_t.to_numpy(copy=False)
-        y_t = self.get_gt(t).to_numpy(copy=False)
+        X_t = X_t.to_numpy(copy=False, dtype=float)
+        y_t = self.get_gt(t).to_numpy(copy=False, dtype=float)
         
         expert_losses = {}
         for m_i, m in enumerate(self.models):

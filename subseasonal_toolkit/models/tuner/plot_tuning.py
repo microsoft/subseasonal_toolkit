@@ -6,7 +6,6 @@ import json
 import matplotlib.pyplot as plt
 from ttictoc import tic, toc
 from subseasonal_toolkit.utils.general_util import make_directories
-from subseasonal_toolkit.utils.experiments_util import get_id_name, get_th_name
 
 #"""
 parser = ArgumentParser()
@@ -17,8 +16,8 @@ parser.add_argument('--target_dates', '-t', default="std_test")
 args = parser.parse_args()
 
 # Assign variables                                                                                                                                     
-gt_id = get_id_name(args.pos_vars[0]) # "contest_precip" or "contest_tmp2m"                                                                            
-target_horizon = get_th_name(args.pos_vars[1]) # "34w" or "56w"    
+gt_id = args.pos_vars[0] # "contest_precip" or "contest_tmp2m"                                                                            
+target_horizon = args.pos_vars[1] # "34w" or "56w"    
 model_name = args.model_name
 submodel_name = args.submodel_name
 target_dates = args.target_dates

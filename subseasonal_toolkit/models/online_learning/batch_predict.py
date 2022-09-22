@@ -33,7 +33,8 @@ from poold.learners import ReplicatedOnlineLearner
 # Forecast rodeo installs
 from subseasonal_toolkit.utils.eval_util import get_target_dates, mean_rmse_to_score
 from subseasonal_toolkit.utils.experiments_util import get_start_delta
-from subseasonal_toolkit.utils.models_util import get_submodel_name, save_forecasts
+from subseasonal_toolkit.utils.models_util import get_submodel_name, save_forecasts, get_forecast_filename
+from subseasonal_toolkit.utils.general_util import printf, set_file_permissions, make_directories, symlink
 
 # Subseasonal forecasting imports
 from s2s_environment import S2SEnvironment 
@@ -52,7 +53,7 @@ parser.add_argument("pos_vars", nargs="*")  # gt_id and horizon
 parser.add_argument('--target_dates', '-t', default="std_contest_eval")
 parser.add_argument('--expert_models', '-m', default="tuned_localboosting,tuned_cfsv2pp,tuned_climpp,perpp,multillr,tuned_salient2",
                     help="Comma separated list of models e.g., 'climpp,cfsv2pp,perpp,multillr'")
-parser.add_argument('--alg', '-a', default="dormplus",
+parser.add_argument('--alg', '-a', default="adahedged",
                     help="Online learning algorithm. One of: 'dorm', dormplus', 'adahedged', 'dub'")
 parser.add_argument('--hint_alg', '-ha', default="None",
                     help="Algorithm to use for hint learning. Set to None to not hint learning.")
@@ -60,10 +61,12 @@ parser.add_argument('--hint', '-hi', default="None",
                     help="Optimistic hint type. Comma separated list of hint types.")
 parser.add_argument('--replicates', '-re', default=1,
                     help="Number of online learning replicates.")
-parser.add_argument('--rperiod', '-rp', default=26,
+parser.add_argument('--rperiod', '-rp', default="None",
                     help="Number of forecasts in a regret period.")
 parser.add_argument('--visualize', '-vis', default=False,
                     help="Visualize online learning output.")
+parser.add_argument('--forecast', '-f', default=None, 
+                        help="include the forecasts of this dynamical model as features")
 args, opt = parser.parse_known_args()
 # -
 
@@ -79,8 +82,14 @@ hint_alg = args.hint_alg # hint algorithm
 hint_type = args.hint # type of optimistic hint
 reps = int(args.replicates) # number of replicated experts
 vis = bool(args.visualize)
+forecast = args.forecast
 
 # Perpare experts, sort model names, and get selected submodel for each
+if forecast is not None:
+    if horizon == '12w':
+        model_string = f'tuned_{forecast}pp,perpp_{forecast}' 
+    else:
+         model_string = f'tuned_climpp,tuned_{forecast}pp,perpp_{forecast}'
 models = model_string.split(',')
 models.sort()
 model_string = (",").join(models)
@@ -112,6 +121,17 @@ submodel_name = get_submodel_name(
 
 print(f"Submodel name {submodel_name}")
 # -
+
+# Create abc model
+if forecast is not None:
+    # Record output model name and submodel name
+    output_model_name = f"abc_{forecast}"
+    # Create directory for storing forecasts if one does not already exist
+    out_dir = os.path.join("models", output_model_name, "submodel_forecasts", 
+                           submodel_name, f"{gt_id}_{horizon}")
+    if not os.path.exists(out_dir):
+        make_directories(out_dir)    
+
 
 # Set alias for online learner
 model_alias["online_learner"] = f"{alg_naming[alg]}"
@@ -223,6 +243,7 @@ for t in range(T):
 
     # Get available learner feedback
     os_times = learner.get_outstanding()
+
     losses_fb = s2s_env.get_losses(t, os_times=os_times)
 
     # Update hinter
@@ -265,7 +286,13 @@ for t in range(T):
         submodel=submodel_name, 
         gt_id=gt_id, 
         horizon=horizon, 
-        target_date_str=target_str)
+        target_date_str=target_str)    
+    if forecast is not None:
+        src_file = get_forecast_filename(model="online_learning", submodel=submodel_name,
+                                         gt_id=gt_id, horizon=horizon, target_date_str=target_str)
+        dst_file = get_forecast_filename(model=f"abc_{forecast}", submodel=submodel_name,
+                                         gt_id=gt_id, horizon=horizon, target_date_str=target_str)
+        symlink(src_file, dst_file, use_abs_path=True)
 
     # Evaluate and store error
     rmse = np.sqrt(mean_squared_error(gt, pred))

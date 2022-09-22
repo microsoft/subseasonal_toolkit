@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 from ttictoc import tic, toc
 from subseasonal_data.utils import get_measurement_variable
 from subseasonal_toolkit.utils.general_util import printf
-from subseasonal_toolkit.utils.experiments_util import get_id_name, get_th_name, get_first_year, get_start_delta
+from subseasonal_toolkit.utils.experiments_util import get_first_year, get_start_delta
 from subseasonal_toolkit.utils.models_util import (get_submodel_name, start_logger, log_params, get_forecast_filename,
                                                    save_forecasts)
 from subseasonal_toolkit.utils.eval_util import get_target_dates, mean_rmse_to_score, save_metric
@@ -47,8 +47,8 @@ if not isnotebook():
     args, opt = parser.parse_known_args()
     
     # Assign variables                                                                                                                                     
-    gt_id = get_id_name(args.pos_vars[0]) # "contest_precip" or "contest_tmp2m"                                                                            
-    horizon = get_th_name(args.pos_vars[1]) # "12w", "34w", or "56w"    
+    gt_id = args.pos_vars[0] # "contest_precip" or "contest_tmp2m"                                                                            
+    horizon = args.pos_vars[1] # "12w", "34w", or "56w"    
     target_dates = args.target_dates
 else:
     # Otherwise, specify arguments interactively 

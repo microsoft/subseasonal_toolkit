@@ -42,7 +42,12 @@ The following examples demonstrate how to generate contiguous US forecasts for t
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m deb_cfsv2`
 - Debiased ECMWF Control and Ensemble:
   - First, select your desired source (control or ensemble) for debiasing and forecasting in `subseasonal_toolkit/models/deb_ecmwf/selected_submodel.json` by setting the `forecast_with` and `debias_with` keys as described in `deb_ecmwf.ipynb`.  
-  - Then, run the selected model: `python -m subseasonal_toolkit.generate_predictions -t std_ecmwf -e -u -m deb_ecmwf`
+  - Then, run the selected model: `python -m subseasonal_toolkit.generate_predictions -t std_paper_ecmwf -e -u -m deb_ecmwf`
+- ECMWF++:
+  - First generate predictions for each model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m ecmwfpp`
+  - Then select a model configuration using the tuner
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_ecmwf -e -u -tu -m ecmwfpp`
 - Informer:
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m informer`
 - LocalBoosting:
@@ -58,8 +63,10 @@ The following examples demonstrate how to generate contiguous US forecasts for t
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m online_learning`
 - Persistence:
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m persistence`
-- Persistence++:
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m perpp`
+- Persistence++ CFSv2:
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m perpp_cfsv2`
+- Persistence++ ECMWF:
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_ecmwf -e -u -m perpp_ecmwf`
 - Prophet:
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m prophet`
 - Salient2:

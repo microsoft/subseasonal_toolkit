@@ -1,8 +1,8 @@
 # Predicts outcomes using Persistence++
 #
 # Example usage:
-#   python src/models/perpp/batch_predict.py contest_tmp2m 34w -t std_val -y all -m None
-#   python src/models/perpp/batch_predict.py contest_precip 34w -t std_val -y 20 -m 56
+#   python models/perpp/batch_predict.py contest_tmp2m 34w -t std_val -y all -m None
+#   python models/perpp/batch_predict.py contest_precip 34w -t std_val -y 20 -m 56
 #
 # Positional args:
 #   gt_id: contest_tmp2m or contest_precip
@@ -15,6 +15,8 @@
 #   --margin_in_days (-m): number of month-day combinations on either side of 
 #     the target combination to include; set to 0 to include only target 
 #     month-day combo; set to "None" to include entire year; (default: "None")
+#   --forecast (-f): include the forecasts of this dynamical model as features;
+#     (default: "cfsv2")
 import os
 from subseasonal_toolkit.utils.notebook_util import call_notebook
 from pkg_resources import resource_filename

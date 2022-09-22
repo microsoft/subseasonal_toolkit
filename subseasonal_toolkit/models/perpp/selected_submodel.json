@@ -3,72 +3,96 @@
     {
         "train_years": "all",
         "margin_in_days": null,
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
     },
     "contest_precip_56w":
     {
         "train_years": "all",
         "margin_in_days": null,
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
     },
     "contest_tmp2m_34w": 
     {
         "train_years": "all",
         "margin_in_days": null,
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
     },
     "contest_tmp2m_56w":
     {
         "train_years": "all",
         "margin_in_days": null,
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
+    },
+    "us_precip_12w":
+    {
+        "train_years": "all",
+        "margin_in_days": null,
+        "forecast": "cfsv2"
     }, 
     "us_precip_34w":
     {
         "train_years": "all",
         "margin_in_days": null,        
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
     },
     "us_precip_56w":
     {
         "train_years": "all",
         "margin_in_days": null,        
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
+    },
+    "us_tmp2m_12w":
+    {
+        "train_years": "all",
+        "margin_in_days": null,
+        "forecast": "cfsv2"
     },
     "us_tmp2m_34w": 
     {
         "train_years": "all",
         "margin_in_days": null,        
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
     },
     "us_tmp2m_56w":
     {
         "train_years": "all",
         "margin_in_days": null,
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
     }, 
+    "us_precip_1.5x1.5_12w": 
+    {
+        "train_years": "all",
+        "margin_in_days": null,        
+        "forecast": "cfsv2"
+    },
     "us_precip_1.5x1.5_34w":
     {
         "train_years": "all",
         "margin_in_days": null,        
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
     },
     "us_precip_1.5x1.5_56w":
     {
         "train_years": "all",
         "margin_in_days": null,        
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
+    },
+    "us_tmp2m_1.5x1.5_12w": 
+    {
+        "train_years": "all",
+        "margin_in_days": null,        
+        "forecast": "cfsv2"
     },
     "us_tmp2m_1.5x1.5_34w": 
     {
         "train_years": "all",
         "margin_in_days": null,        
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
     },
     "us_tmp2m_1.5x1.5_56w":
     {
         "train_years": "all",
         "margin_in_days": null,
-        "use_cfsv2": "True"
+        "forecast": "cfsv2"
     }
 }

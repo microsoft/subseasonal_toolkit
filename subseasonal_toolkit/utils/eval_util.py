@@ -45,7 +45,7 @@ def get_named_targets():
     """ Return a list of named target date ranges """
     return ["std_train", "std_val", "std_test", "std_ens", "std_all", \
         "std_future", "std_contest_fri", "std_contest", "std_contest_daily", "std_contest_eval", \
-        "std_contest_eval_daily", "std_paper", "std_paper_daily", "std_ecmwf"]
+        "std_contest_eval_daily", "std_paper", "std_paper_forecast", "std_paper_eval", "std_paper_daily", "std_paper_ecmwf", "s2s", "s2s_eval"]
 
 def get_target_dates(date_str="std_test", horizon=None):
     """Return list of target date datetime objects for model evaluation.
@@ -67,8 +67,14 @@ def get_target_dates(date_str="std_test", horizon=None):
         "std_contest_eval" for biweekly contest dates during the contest period for 2010-2018
         "std_contest_eval_daily" for daily contest dates during the contest period for 2010-2018
         "std_paper" for biweekly Wednesdays for the period Jan 2011-2020, for paper performance metrics 
-        "std_paper_eval" daily dates for the period Jan 2007-2020, for model tuning for paper,
-        "std_ecmwf" Tuesdays and Fridays from 2016 through end of 2020 (available ECMWF data),
+        "std_paper_forecast" daily dates for the period Jan 2018-2021, for paper performance metrics 
+        "std_paper_eval" daily dates for the period Jan 2015-2021, for model tuning for paper,
+        "std_paper_ecmwf" Tuesdays and Fridays from 2016 through end of 2020 (available ECMWF data),
+        "cold_texas" for Texas cold wave (Feb. 11 - 18, 2021),
+        "cold_ne" for New England cold wave (Dec. 25, 2017 - Jan. 07, 2018) due to polar vortex response,
+        "cold_gl"for cold wave in the great lakes region (Jan. 27, 2019 - Feb. 07, 2019),
+        "s2s" Thursdays in 2020, used in the S2S competition
+        "s2s_eval" daily in 2017-2020, for model tuning for S2S competition
         an inclusive date range of the form '19990101-20201231',
         or a string with comma-separated dates in YYYYMMDD format
         (e.g., '20170101,20170102,20180309'))
@@ -202,13 +208,45 @@ def get_target_dates(date_str="std_test", horizon=None):
         # return sorted(set(multiyear_dates), key=lambda x: multiyear_dates.index(x)) # Could improve efficiency 
         return multiyear_dates
 
+    elif date_str == "std_paper_forecast":
+        ''' 
+        Paper performance evaluation period, daily from 2018-2021. 
+        '''
+        first_year = 2018
+        number_of_days = 365 * 3 + 366 * 1
     elif date_str == "std_paper_eval":
         ''' 
-        Evaluation period for model tuning for paper, daily from 2007-2020. 
+        Evaluation period for model tuning for paper, daily from 2015-2021. 
         '''
-        first_year = 2007
-        number_of_days = 365 * 10 + 366 * 4
-
+        first_year = 2015
+        number_of_days = 365 * 5 + 366 * 2     
+    elif date_str == "cold_texas":
+        '''
+        Texas cold wave (Feb. 11 - 18, 2021):
+        https://en.wikipedia.org/wiki/February_2021_North_American_cold_wave
+        '''
+        cstart = datetime(year=2021, month=2, day=7) 
+        cend = datetime(year=2021, month=2, day=15) 
+        dates = [cstart + timedelta(days=x) for x in range(0, (cend - cstart).days + 1)]
+        return dates
+    elif date_str == "cold_ne":
+        '''
+        New England cold wave (Dec. 25, 2017 - Jan. 07, 2018) due to polar vortex response: 
+        https://en.wikipedia.org/wiki/December_2017%E2%80%93January_2018_North_American_cold_wave
+        '''
+        cstart = datetime(year=2017, month=12, day=21) 
+        cend = datetime(year=2018, month=1, day=7) 
+        dates = [cstart + timedelta(days=x) for x in range(0, (cend - cstart).days + 1)]
+        return dates
+    elif date_str == "cold_gl":
+        '''
+        Cold wave in the great lakes region (Jan. 27, 2019 - Feb. 07, 2019):
+        https://en.wikipedia.org/wiki/January%E2%80%93February_2019_North_American_cold_wave
+        '''
+        cstart = datetime(year=2019, month=1, day=23) 
+        cend = datetime(year=2019, month=2, day=7) 
+        dates = [cstart + timedelta(days=x) for x in range(0, (cend - cstart).days + 1)]
+        return dates
     elif "-" in date_str:
         # Input is a string of the form '20170101-20180130'
         first_date, last_date = date_str.split("-")
@@ -219,7 +257,7 @@ def get_target_dates(date_str="std_test", horizon=None):
             for x in range(0, (last_date - first_date).days + 1)
         ]
         return dates
-    elif date_str == "std_ecmwf":
+    elif date_str == "std_paper_ecmwf":
         ''' 
         Evaluation period for ECMWF experiment, Tuesdays and Fridays from Jan 2016 through
         the end of 2020. 
@@ -235,6 +273,31 @@ def get_target_dates(date_str="std_test", horizon=None):
         dates.sort()
         
         return dates
+    elif date_str == "s2s":
+        ''' 
+        Evaluation period for S2S contest, Thursdays in 2020.
+        '''
+        if horizon == "12w":
+            start = datetime(year=2020, month=1, day=2) # a Thursday
+            end = datetime(year=2020, month=12, day=31)     
+        elif horizon == "34w":
+            start = datetime(year=2020, month=1, day=2) # a Thursday
+            end = datetime(year=2021, month=1, day=14)   
+        elif horizon == "56w":
+            start = datetime(year=2020, month=1, day=2) # a Thursday
+            end = datetime(year=2021, month=1, day=28)   
+        else:
+            raise ValueError("Must provide valid horizon to get targets.")
+
+        dates = [start + timedelta(x) for x in range(0, 365, 7) if start + timedelta(x) <= end]
+        dates.sort()
+        return dates
+    elif date_str == "s2s_eval":
+        ''' 
+        Tuning period for S2S contest, daily from 2017-2020. 
+        '''
+        first_year = 2017
+        number_of_days = 365 * 3 + 366
 
     elif "," in date_str:
         # Input is a string of the form '20170101,20170102,20180309'
