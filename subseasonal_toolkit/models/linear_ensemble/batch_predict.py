@@ -24,12 +24,10 @@ import warnings
 from datetime import datetime
 from argparse import ArgumentParser
 from joblib import Parallel, delayed
-from sklearn.linear_model import LinearRegression
 
-from subseasonal_toolkit.utils.experiments_util import get_id_name, get_th_name
-from subseasonal_toolkit.utils.models_util import save_forecasts
+from subseasonal_toolkit.utils.models_util import save_forecasts, get_forecast_filename
 from subseasonal_toolkit.utils.eval_util import get_target_dates
-from subseasonal_toolkit.utils.general_util import printf, set_file_permissions
+from subseasonal_toolkit.utils.general_util import printf, set_file_permissions, make_directories, symlink
 from subseasonal_toolkit.models.linear_ensemble.attributes import get_submodel_name
 
 from subseasonal_data import data_loaders
@@ -54,14 +52,22 @@ parser.add_argument('--model_names', '-m', default="tuned_localboosting,tuned_cf
                     help="Comma separated list of models e.g., 'climpp,cfsv2pp,perpp,multillr'")
 parser.add_argument('-t', '--target_dates', type=str, nargs='+', default=["std_val", "std_test"],
                     help="Dates to predict on")
+parser.add_argument('--forecast', '-f', default=None, 
+                        help="include the forecasts of this dynamical model as features")
 
 # Assign arguments to variables
 args, opt = parser.parse_known_args()
-gt_id = get_id_name(args.pos_vars[0])  # "contest_precip" or "contest_tmp2m"
-horizon = get_th_name(args.pos_vars[1])  # "34w" or "56w"
+gt_id = args.pos_vars[0]  # "contest_precip" or "contest_tmp2m"
+horizon = args.pos_vars[1]  # "34w" or "56w"
 model_string = args.model_names
+forecast = args.forecast
 
 # Perpare input models
+if forecast is not None:
+    if horizon == '12w':
+        model_string = f'tuned_{forecast}pp,perpp_{forecast}' 
+    else:
+         model_string = f'tuned_climpp,tuned_{forecast}pp,perpp_{forecast}'
 models = model_string.split(',')
 models.sort()
 model_string = (",").join(models)
@@ -73,6 +79,17 @@ target_dates = args.target_dates
 # Get target dates
 target_dates_objs = _get_dates_list(target_dates, horizon)
 
+# Create abc model
+if forecast is not None:
+    # Record output model name and submodel name
+    output_model_name = f"abc_{forecast}"
+    submodel_name = get_submodel_name(model_names=model_string)
+    # Create directory for storing forecasts if one does not already exist
+    out_dir = os.path.join("models", output_model_name, "submodel_forecasts", 
+                           submodel_name, f"{gt_id}_{horizon}")
+    if not os.path.exists(out_dir):
+        make_directories(out_dir)    
+    
 # File path template
 submodel_fname_template = os.path.join(
     "models","{model_name}","submodel_forecasts","{submodel_name}",
@@ -107,7 +124,7 @@ else:
 # Merge test dataframes in a start_date, lat,lon, model1, model2,..., modeln dataframes
 # And apply models from above step
 print("Predicting on target dates...", end='')
-start = time.time()
+start = time.time()    
 test_dataframe = _merge_dataframes(models, target_fnames)
 
 def _target_predict(target_date):
@@ -116,18 +133,25 @@ def _target_predict(target_date):
     target_test_dataframe = target_test_dataframe.dropna()
     target_date_str = datetime.strftime(target_date, '%Y%m%d')
     if target_test_dataframe.empty:
-        warnings.warn("The dataframe for target date {} is empty. Please check the model outputs and rerun this script.".format(target_date_str)
-        )
+        print(f"Missing date {target_date_str}")
+#         warnings.warn("The dataframe for target date {} is empty. Please check the model outputs and rerun this script.".format(target_date_str))
         preds["pred"] = np.nan
     else:
         preds = linear_ensemble_model.predict(target_test_dataframe)
-    # Write results to file
-    save_forecasts(
-        preds,
-        model="linear_ensemble", submodel=submodel_name,
-        gt_id=gt_id, horizon=horizon,
-        target_date_str=target_date_str)
-
+        # Write results to file
+        save_forecasts(
+            preds,
+            model="linear_ensemble", submodel=submodel_name,
+            gt_id=gt_id, horizon=horizon,
+            target_date_str=target_date_str)
+        if forecast is not None:
+            src_file = get_forecast_filename(model="linear_ensemble", submodel=submodel_name,
+                                             gt_id=gt_id, horizon=horizon, target_date_str=target_date_str)
+            dst_file = get_forecast_filename(model=f"abc_{forecast}", submodel=submodel_name,
+                                             gt_id=gt_id, horizon=horizon, target_date_str=target_date_str)
+            symlink(src_file, dst_file, use_abs_path=True)
+    
+ 
 # Parallelize target predictions
 Parallel(n_jobs=-1, verbose=1, backend='threading')(
     delayed(_target_predict)(target_date) for target_date in target_dates_objs)

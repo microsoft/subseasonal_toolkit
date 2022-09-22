@@ -37,14 +37,21 @@ def fit_and_predict(df, gt_col=None, x_cols=None, base_col=None,
         subset=x_cols+[gt_col,base_col]) 
     test_df = df.loc[df.start_date.isin(test_dates)]
     
-    # fit model, and return predictions and truth
-    preds = pd.DataFrame(
-        {'pred': model.fit(X = train_df[x_cols], 
-                           y = train_df[gt_col] - train_df[base_col]
-                           ).predict(test_df[x_cols]) 
-         + test_df[base_col].values, 
-         'truth': test_df[gt_col].values
-        }, index=[test_df.lat,test_df.lon,test_df.start_date])
+    if train_df.empty:
+        # If training set is empty, use base_col as prediction
+        preds = pd.DataFrame(
+            {'pred': test_df[base_col].values, 
+             'truth': test_df[gt_col].values
+            }, index=[test_df.lat,test_df.lon,test_df.start_date])
+    else:
+        # fit model, and return predictions and truth
+        preds = pd.DataFrame(
+            {'pred': model.fit(X = train_df[x_cols], 
+                               y = train_df[gt_col] - train_df[base_col]
+                               ).predict(test_df[x_cols]) 
+             + test_df[base_col].values, 
+             'truth': test_df[gt_col].values
+            }, index=[test_df.lat,test_df.lon,test_df.start_date])
     if return_cols:
         # Add sample weight column
         preds.loc[:,return_cols] = test_df[return_cols].values

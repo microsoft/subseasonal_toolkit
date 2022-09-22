@@ -17,33 +17,6 @@ from subseasonal_data.utils import (createmaskdf, load_measurement,
                               get_measurement_variable, shift_df, load_forecast_from_file,
                               get_combined_data_filename, print_missing_cols_func, year_slice, df_merge)
 
-# Some global variables
-# Forecast id to file name
-forecast_id_to_fname_mapping = {
-    "subx_cfsv2-precip": "subx-cfsv2-precip-all_leads-8_periods_avg",
-    "subx_cfsv2-tmp2m": "subx-cfsv2-tmp2m-all_leads-8_periods_avg",
-    "subx_geos_v2p1-precip": "subx-geos_v2p1-precip-all_leads-4_periods_avg",
-    "subx_geos_v2p1-tmp2m": "subx-geos_v2p1-tmp2m-all_leads-4_periods_avg",
-    "subx_nesm-precip": "subx-nesm-precip-all_leads-4_periods_avg",
-    "subx_nesm-tmp2m": "subx-nesm-tmp2m-all_leads-4_periods_avg",
-    "subx_ccsm4-precip": "subx-ccsm4-precip-all_leads-4_periods_avg",
-    "subx_ccsm4-tmp2m": "subx-ccsm4-tmp2m-all_leads-4_periods_avg",
-    "subx_cfsv2-precip-us": "subx-cfsv2-precip-all_leads-8_periods_avg-us",
-    "subx_cfsv2-tmp2m-us": "subx-cfsv2-tmp2m-all_leads-8_periods_avg-us",
-    "subx_geos_v2p1-precip-us": "subx-geos_v2p1-precip-all_leads-4_periods_avg-us",
-    "subx_geos_v2p1-tmp2m-us": "subx-geos_v2p1-tmp2m-all_leads-4_periods_avg-us",
-    "subx_nesm-precip-us": "subx-nesm-precip-all_leads-4_periods_avg-us",
-    "subx_nesm-tmp2m-us": "subx-nesm-tmp2m-all_leads-4_periods_avg-us",
-    "subx_ccsm4-precip-us": "subx-ccsm4-precip-all_leads-4_periods_avg-us",
-    "subx_ccsm4-tmp2m-us": "subx-ccsm4-tmp2m-all_leads-4_periods_avg-us"
-}
-# Add nmme to mapping
-nmme_ids = ["nmme{idx}-{var}-{target_horizon}".format(
-    idx=idx, var=var, target_horizon=target_horizon) for idx, var, target_horizon in itertools.product(
-        ["", "0"], ["prate", "tmp2m"], ["34w", "56w"])
-]
-forecast_id_to_fname_mapping.update({k: k for k in nmme_ids})
-
 
 def pandas2file(df_to_file_func, out_file):
     """Writes pandas dataframe or series to file, makes file writable by all,
@@ -158,19 +131,27 @@ def get_first_year(data_id):
        data_id: forecast identifier beginning with "nmme" or ground truth identifier
          accepted by get_ground_truth
     """
-    if data_id.startswith("subx_cfsv2") or data_id.startswith("iri_cfsv2"):
+    if (data_id.startswith("subx_cfsv2") or data_id.startswith("iri_cfsv2") or
+        data_id.startswith("iri_ccsm4") or data_id.startswith("iri_fimr1p1") or
+        data_id.startswith("iri_geos") or data_id.startswith("iri_nesm")):
         return 1999
-    if data_id.startswith("ecmwf"):
+    if data_id.startswith("iri_gefs"):
+        return 1989
+    if data_id.startswith("iri_gem"):
+        return 1998
+    if "ecmwf" in data_id:
         return 2015 # the first year of forecast data 
     if data_id.startswith("global"):
         return 2011
-    if data_id.endswith("precip") or data_id.endswith("precip_1.5x1.5"):
+    if (data_id.endswith("precip") or data_id.endswith("precip_1.5x1.5") or
+        data_id.endswith("precip_p1_1.5x1.5") or data_id.endswith("precip_p3_1.5x1.5")):
         return 1948
     if data_id.startswith("nmme"):
         return 1982
     if (data_id.endswith("tmp2m") or data_id.endswith("tmin") or 
         data_id.endswith("tmax") or data_id.endswith("tmp2m_1.5x1.5") or 
-        data_id.endswith("tmin_1.5x1.5") or data_id.endswith("tmax_1.5x1.5")):
+        data_id.endswith("tmin_1.5x1.5") or data_id.endswith("tmax_1.5x1.5") or
+        data_id.endswith("tmp2m_p1_1.5x1.5") or data_id.endswith("tmp2m_p3_1.5x1.5")):
         return 1979
     if "sst" in data_id or "icec" in data_id:
         return 1981
@@ -469,8 +450,8 @@ def get_measurement_lag(data_id):
           "pres.sfc.gauss" in data_id or "pevpr.sfc.gauss" in data_id):
         # NCEP/NCAR measurements are released one day late
         days_late = 1
-    elif data_id.startswith("subx_cfsv2"):
-        # No aggregation required for subx cfsv2 forecasts
+    elif data_id.startswith("subx_") or "ecmwf" in data_id:
+        # No aggregation required for subx or ecmwf forecasts
         aggregation_days = 0
     return aggregation_days + days_late
 
@@ -520,36 +501,6 @@ def clim_merge(df, climatology, date_col="start_date",
                     right_on=on + [climatology[date_col].dt.month,
                                    climatology[date_col].dt.day],
                     how=how, suffixes=suffixes).drop(['key_2', 'key_3'], axis=1)
-
-
-def get_id_name(gt_id, None_ok=False):
-    if gt_id in ["tmp2m", "temp", "contest_tmp2m", "contest_temp"]:
-        return "contest_tmp2m"
-    elif gt_id in ["precip", "prate", "contest_prate", "contest_precip"]:
-        return "contest_precip"
-    elif gt_id in ["us_tmp2m", "us_temp"]:
-        return "us_tmp2m"
-    elif gt_id in ["us_prate", "us_precip"]:
-        return "us_precip"
-    elif gt_id in ["us_precip_1.5x1.5", "us_tmp2m_1.5x1.5"]:
-        return gt_id
-    elif gt_id is None and None_ok:
-        return None
-    else:
-        raise Exception(f"gt_id not recognized. Value passed: {gt_id}.")
-
-
-def get_th_name(target_horizon, None_ok=False):
-    if target_horizon in ["12", "12w"]:
-        return "12w"
-    elif target_horizon in ["34", "34w"]:
-        return "34w"
-    elif target_horizon in ["56", "56w"]:
-        return "56w"
-    elif target_horizon is None and None_ok:
-        return None
-    raise Exception(
-        f"target_horizon not recognized. Value passed: {target_horizon}.")
 
 
 def get_conditioning_cols(gt_id, horizon, mei=True, mjo=True):

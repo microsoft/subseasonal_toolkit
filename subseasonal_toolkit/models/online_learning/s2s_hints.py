@@ -438,7 +438,7 @@ class HorizonForecast(Hinter):
         w = self.learner.get_play(t)
 
         return  self.loss_gradient(
-               X=X.to_numpy(), y=y_tilde.to_numpy(), w=w).reshape(-1,)
+               X=X.to_numpy(dtype=float), y=y_tilde.to_numpy(dtype=float), w=w).reshape(-1,)
 
 class ExpertEnsemble(Hinter):
     ''' Returns gradient evaluted at y value which is an ensemble of the current forecast,
@@ -466,7 +466,7 @@ class ExpertEnsemble(Hinter):
             y_tilde = X @ w_last # use last play to estimate 
 
         g_tilde = self.loss_gradient(
-            X=X.to_numpy(), y=y_tilde.to_numpy(), w=w).reshape(-1,)
+            X=X.to_numpy(dtype=float), y=y_tilde.to_numpy(dtype=float), w=w).reshape(-1,)
         return g_tilde
 
 class PrevObs(Hinter):
@@ -487,7 +487,7 @@ class PrevObs(Hinter):
         y_tilde = self.environment.most_recent_obs(t) 
         w = self.learner.get_play(t)
 
-        g_tilde = self.loss_gradient(X=X.to_numpy(), y=y_tilde.to_numpy(), w=w)
+        g_tilde = self.loss_gradient(X=X.to_numpy(dtype=float), y=y_tilde.to_numpy(dtype=float), w=w)
         return g_tilde
 
 class MeanObs(Hinter):
@@ -516,7 +516,7 @@ class MeanObs(Hinter):
         else:
             y_tilde = self.y_sum / self.y_len
 
-        g_tilde = self.loss_gradient(X=X.to_numpy(), y=y_tilde, w=w)
+        g_tilde = self.loss_gradient(X=X.to_numpy(dtype=float), y=y_tilde, w=w)
         return g_tilde
 
 class TrendObs(Hinter):
@@ -547,7 +547,7 @@ class TrendObs(Hinter):
         else:
             next_idx = (self.y_idx + 1) % 1
             y_tilde = (self.y_prev[next_idx] - self.y_prev[self.y_idx]) + self.y_prev[next_idx]
-        return self.loss_gradient(X=X.to_numpy(), y=y_tilde, w=w)
+        return self.loss_gradient(X=X.to_numpy(dtype=float), y=y_tilde, w=w)
 
 class PrevGrad(Hinter):
     ''' Returns most recently observed feedback gradient '''

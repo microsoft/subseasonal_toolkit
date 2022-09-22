@@ -22,10 +22,9 @@ def get_selected_submodel_name(gt_id, target_horizon):
     return get_submodel_name(**json_args)
 
 def get_submodel_name(train_years="all", margin_in_days=None,
-                      use_cfsv2="False"):
+                      forecast="cfsv2"):
     """Returns submodel name for a given setting of model parameters
     """
-    submodel_name = (f"{MODEL_NAME}-years{train_years}_margin{margin_in_days}"
-                     f"_cfsv2{use_cfsv2}")
+    submodel_name = (f"{MODEL_NAME}_{forecast}-years{train_years}_margin{margin_in_days}")
 
     return submodel_name

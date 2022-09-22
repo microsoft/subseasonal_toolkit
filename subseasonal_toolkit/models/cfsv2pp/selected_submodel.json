@@ -7,8 +7,8 @@
 	"first_day": 1,
 	"last_day": 1,
 	"loss": "mse",
-	"first_lead": 0,
-	"last_lead": 0
+	"first_lead": 1,
+	"last_lead": 1
     },
     "contest_precip_34w":
     {
@@ -40,8 +40,8 @@
 	"first_day": 1,
 	"last_day": 1,
 	"loss": "mse",
-	"first_lead": 0,
-	"last_lead": 0
+	"first_lead": 1,
+	"last_lead": 1
     },
     "contest_tmp2m_34w":
     {
@@ -73,8 +73,8 @@
 	"first_day": 1,
 	"last_day": 42,
 	"loss": "mse",
-	"first_lead": 0,
-	"last_lead": 29
+	"first_lead": 1,
+	"last_lead": 1
     },
     "us_precip_34w":
     {
@@ -106,8 +106,8 @@
 	"first_day": 1,
 	"last_day": 7,
 	"loss": "mse",
-	"first_lead": 15,
-	"last_lead": 22
+	"first_lead": 1,
+	"last_lead": 1
     },
     "us_tmp2m_34w":
     {
@@ -139,8 +139,8 @@
 	"first_day": 1,
 	"last_day": 42,
 	"loss": "mse",
-	"first_lead": 0,
-	"last_lead": 29
+	"first_lead": 1,
+	"last_lead": 1
     },
     "us_precip_1.5x1.5_34w":
     {
@@ -172,8 +172,8 @@
 	"first_day": 1,
 	"last_day": 7,
 	"loss": "mse",
-	"first_lead": 15,
-	"last_lead": 22
+	"first_lead": 1,
+	"last_lead": 1
     },
     "us_tmp2m_1.5x1.5_34w":
     {

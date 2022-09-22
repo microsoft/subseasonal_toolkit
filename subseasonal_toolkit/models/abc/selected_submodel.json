@@ -1,0 +1,22 @@
+{
+    "us_tmp2m_1.5x1.5_12w": {
+        "model_names": "tuned_subxpp,perpp_subx"
+    },
+    "us_tmp2m_1.5x1.5_34w": {
+        "model_names": "tuned_subxpp,tuned_climpp,perpp_subx"
+    },
+    "us_tmp2m_1.5x1.5_56w": {
+        "model_names": "tuned_subxpp,tuned_climpp,perpp_subx"
+    },
+    "us_precip_1.5x1.5_12w": {
+        "model_names": "tuned_subxpp,perpp_subx"
+    },
+    "us_precip_1.5x1.5_34w": {
+        "model_names": "tuned_subxpp,tuned_climpp,perpp_subx"
+    },
+    "us_precip_1.5x1.5_56w": {
+        "model_names": "tuned_subxpp,tuned_climpp,perpp_subx"
+    }
+}
+
+

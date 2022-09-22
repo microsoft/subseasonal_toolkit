@@ -88,5 +88,95 @@
   {
     "num_years": 3,
     "margin_in_days": "None"
+  },
+  "global_precip_1.5x1.5_12w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_precip_1.5x1.5_34w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_precip_1.5x1.5_56w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_tmp2m_1.5x1.5_12w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_tmp2m_1.5x1.5_34w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_tmp2m_1.5x1.5_56w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_precip_p1_1.5x1.5_12w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_precip_p1_1.5x1.5_34w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_precip_p1_1.5x1.5_56w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_tmp2m_p1_1.5x1.5_12w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_tmp2m_p1_1.5x1.5_34w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_tmp2m_p1_1.5x1.5_56w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_precip_p3_1.5x1.5_12w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_precip_p3_1.5x1.5_34w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_precip_p3_1.5x1.5_56w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_tmp2m_p3_1.5x1.5_12w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_tmp2m_p3_1.5x1.5_34w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
+  },
+  "global_tmp2m_p3_1.5x1.5_56w":
+  {
+    "num_years": 3,
+    "margin_in_days": "None"
   }
 }

@@ -35,9 +35,18 @@
         "replicates": 1,
         "training_dates": "std_paper"
   },
+  "us_precip_12w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
   "us_precip_34w":
   {
-        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
         "alg": "adahedged",
         "rperiod": "None",
         "hint": "recent_g",
@@ -46,7 +55,16 @@
   },
   "us_precip_56w":
   {
-        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper"
+  },
+  "us_tmp2m_12w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
         "alg": "adahedged",
         "rperiod": "None",
         "hint": "recent_g",
@@ -55,7 +73,7 @@
   },
   "us_tmp2m_34w":
   {
-        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
         "alg": "adahedged",
         "rperiod": "None",
         "hint": "recent_g",
@@ -64,57 +82,66 @@
   },
   "us_tmp2m_56w":
   {
-        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
         "alg": "adahedged",
         "rperiod": "None",
         "hint": "recent_g",
         "replicates": 1,
         "training_dates": "std_paper"
   },
-  "us_tmp2m_56w":
+  "us_precip_1.5x1.5_12w":
   {
-        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
         "alg": "adahedged",
         "rperiod": "None",
         "hint": "recent_g",
         "replicates": 1,
-        "training_dates": "std_paper"
+        "training_dates": "std_paper_ecmwf"
   },
-  "us_precip_1.5x1.5_34w":
+    "us_precip_1.5x1.5_34w":
   {
-        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
-        "alg": "ah",
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
+        "alg": "adahedged",
         "rperiod": "None",
         "hint": "recent_g",
         "replicates": 1,
-        "training_dates": "std_ecmwf"
+        "training_dates": "std_paper_ecmwf"
   },
   "us_precip_1.5x1.5_56w":
   {
-        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
-        "alg": "ah",
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
+        "alg": "adahedged",
         "rperiod": "None",
         "hint": "recent_g",
         "replicates": 1,
-        "training_dates": "std_ecmwf"
+        "training_dates": "std_paper_ecmwf"
+  },
+  "us_tmp2m_1.5x1.5_12w":
+  {
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
+        "alg": "adahedged",
+        "rperiod": "None",
+        "hint": "recent_g",
+        "replicates": 1,
+        "training_dates": "std_paper_ecmwf"
   },
   "us_tmp2m_1.5x1.5_34w":
   {
-        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
-        "alg": "ah",
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
+        "alg": "adahedged",
         "rperiod": "None",
         "hint": "recent_g",
         "replicates": 1,
-        "training_dates": "std_ecmwf"
+        "training_dates": "std_paper_ecmwf"
   },
   "us_tmp2m_1.5x1.5_56w":
   {
-        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp",
-        "alg": "ah",
+        "expert_models": "tuned_cfsv2pp,tuned_climpp,perpp_cfsv2",
+        "alg": "adahedged",
         "rperiod": "None",
         "hint": "recent_g",
         "replicates": 1,
-        "training_dates": "std_ecmwf"
+        "training_dates": "std_paper_ecmwf"
   }
 }
 

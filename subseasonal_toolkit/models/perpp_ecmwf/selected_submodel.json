@@ -1,0 +1,32 @@
+{
+    "us_precip_1.5x1.5_12w":
+    {
+        "train_years": "all",
+        "margin_in_days": null
+    },
+    "us_precip_1.5x1.5_34w":
+    {
+        "train_years": "all",
+        "margin_in_days": null
+    },
+    "us_precip_1.5x1.5_56w":
+    {
+        "train_years": "all",
+        "margin_in_days": null
+    },
+    "us_tmp2m_1.5x1.5_12w": 
+    {
+        "train_years": "all",
+        "margin_in_days": null
+    },
+    "us_tmp2m_1.5x1.5_34w": 
+    {
+        "train_years": "all",
+        "margin_in_days": null
+    },
+    "us_tmp2m_1.5x1.5_56w":
+    {
+        "train_years": "all",
+        "margin_in_days": null
+    }
+}

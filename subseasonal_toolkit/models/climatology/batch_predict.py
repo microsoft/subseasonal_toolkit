@@ -14,7 +14,7 @@ import pandas as pd
 from argparse import ArgumentParser
 from datetime import datetime
 from subseasonal_data.data_loaders import get_climatology
-from subseasonal_toolkit.utils.experiments_util import get_id_name, get_th_name, pandas2hdf
+from subseasonal_toolkit.utils.experiments_util import pandas2hdf
 from subseasonal_toolkit.utils.eval_util import get_target_dates
 from subseasonal_toolkit.utils.models_util import save_forecasts
 
@@ -25,8 +25,8 @@ parser.add_argument('--target_dates', '-t', default="std_test")
 args = parser.parse_args()
 
 # Assign variables
-gt_id = get_id_name(args.pos_vars[0])  # "contest_precip" or "contest_tmp2m"
-horizon = get_th_name(args.pos_vars[1])  # "34w" or "56w"
+gt_id = args.pos_vars[0]  # "contest_precip" or "contest_tmp2m"
+horizon = args.pos_vars[1]  # "34w" or "56w"
 target_dates = args.target_dates
 
 model_name = "climatology"

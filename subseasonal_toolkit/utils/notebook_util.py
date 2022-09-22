@@ -1,7 +1,6 @@
 # Utility functions supporting jupyter notebooks
-from ttictoc import tic, toc
-from .general_util import printf
-import subprocess, shlex, sys
+from .general_util import printf, tic, toc
+import subprocess, shlex, sys, os
 
 def isnotebook():
     """Returns True if code is being executed interactively as a Jupyter notebook
@@ -29,7 +28,6 @@ def call_notebook(ntbk, extra_args = ""):
     tic()
     # Convert jupyter notebook to script and remove extraneous folders generated 
     # by nbconvert
-    import os
     output = os.path.abspath(ntbk).replace(".ipynb","")
     subprocess.call(f'jupyter nbconvert --to script "{ntbk}"; '
                     'rm -rf nbconvert; mv \~ deleteme; rm -rf deleteme',

@@ -6,9 +6,9 @@ import time
 import warnings
 import subprocess
 import datetime
+from ttictoc import Timer
 
 DATETIME_FORMAT = '%Y%m%d'
-
 
 def printf(str):
     """Calls print on given argument and then flushes
@@ -16,6 +16,12 @@ def printf(str):
     """
     print(str, flush=True)
 
+# Define tic and toc functions
+_TICTOC_HELPER_CLASS_5da0381c_27af_4d67_8881 = Timer(matlab_like=True)
+tic = _TICTOC_HELPER_CLASS_5da0381c_27af_4d67_8881.start
+def toc():
+    printf(f"elapsed: {_TICTOC_HELPER_CLASS_5da0381c_27af_4d67_8881.stop()}s")
+    
 
 def make_directories(dirname):
     """Creates directory and parent directories with 777 permissions
@@ -83,11 +89,16 @@ def get_task_from_string(task_str):
         task_str: string in format "<region>_<gt_id>_<horzion>
     """
     try:
-        region, gt_id, horizon = task_str.split('_')
+        if "1.5" in task_str:
+            region, gt_id, resolution, horizon =  task_str.split('_')
+            gt_id = f"{gt_id}_{resolution}"
+        else:
+            region, gt_id, horizon = task_str.split('_')
+            
         if region not in ["contest", "us"]:
             raise ValueError("Bad region.")
 
-        if gt_id not in ["tmp2m", "precip"]:
+        if gt_id not in ["tmp2m", "precip", "tmp2m_1.5x1.5", "precip_1.5x1.5"]:
             raise ValueError("Bad gt_id.")
 
         if horizon not in ["12w", "34w", "56w"]:

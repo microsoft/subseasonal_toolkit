@@ -11,7 +11,7 @@ from itertools import product
 from datetime import datetime, timedelta
 from subseasonal_toolkit.utils.eval_util import get_target_dates, mean_rmse_to_score
 from subseasonal_toolkit.utils.general_util import printf, make_directories, symlink
-from subseasonal_toolkit.utils.experiments_util import get_id_name, get_th_name, get_first_year, get_start_delta
+from subseasonal_toolkit.utils.experiments_util import get_first_year, get_start_delta
 from subseasonal_toolkit.utils.models_util import (get_submodel_name, start_logger, log_params, get_forecast_filename,
                                                    save_forecasts)
 
@@ -109,7 +109,7 @@ def load_metric_df(gt_id="contest_tmp2m", target_horizon="34w", model_name="clim
         if filenames:
             for f in filenames:
                 df = pd.read_hdf(f) if filenames.index(f)==0 else df.append(pd.read_hdf(f))
-            df = df.sort_values(by="start_date").set_index(index_cols).rename(columns={"rmse":submodel_name})
+            df = df.sort_values(by="start_date").set_index(index_cols).rename(columns={metric:submodel_name})
             df = df[~df.index.duplicated(keep='first')]
             metric_df = metric_df.join(df)
     metric_df = metric_df.dropna(axis=0, how="all").drop_duplicates()
