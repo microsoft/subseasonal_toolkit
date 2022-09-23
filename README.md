@@ -1,6 +1,21 @@
 # Subseasonal Forecasting Toolkit
 
-The `subseasonal_toolkit` package provides implementations of the subseasonal forecasting toolkit models, machine learning models, and meteorological baselines presented in the preprint
+The `subseasonal_toolkit` package provides implementations of the subseasonal forecasting ABC model of
+
+[Adaptive Bias Correction for Subseasonal Forecasting](https://arxiv.org/pdf/.pdf)  
+Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Judah Cohen, Miruna Oprescu, Ernest Fraenkel, and Lester Mackey.  Sep. 2022.
+
+```
+@article{
+  mouatadid2022adaptive,
+  title={Adaptive Bias Correction for Subseasonal Forecasting},
+  author={Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Judah Cohen, Miruna Oprescu, Ernest Fraenkel, and Lester Mackey},
+  journal={arXiv preprint arXiv:},
+  year={2022}
+}
+```
+
+and the machine learning models and meteorological baselines of
 
 [Learned Benchmarks for Subseasonal Forecasting](https://arxiv.org/pdf/2109.10399.pdf)  
 Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Miruna Oprescu, Judah Cohen, Franklyn Wang, Sean Knight, Maria Geogdzhayeva, Sam Levang, Ernest Fraenkel, and Lester Mackey.  Sep. 2021.
@@ -24,30 +39,57 @@ Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Miruna Oprescu, Judah
 
 The following examples demonstrate how to generate contiguous US forecasts for the target dates evaluated in "Learned Benchmarks for Subseasonal Forecasting" using each implemented model.
 
+- ABC:
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -m abc`
 - AutoKNN:
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m autoknn`
+- CCSM4++:
+  - First generate predictions for each model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m ccsm4pp`
+  - Then select a model configuration using the tuner
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -tu -m ccsm4pp`
 - CFSv2++:
   - First generate predictions for each model configuration
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -u -b -m cfsv2pp`
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m cfsv2pp`
   - Then select a model configuration using the tuner
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -tu -m cfsv2pp`
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -tu -m cfsv2pp`
 - Climatology:
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m climatology`
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -m climatology`
 - Climatology++:
   - First generate predictions for each model configuration
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -u -b -m climpp`
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp`
   - Then select a model configuration using the tuner
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -tu -m climpp`
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -tu -m climpp`
 - Debiased CFSv2:
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m deb_cfsv2`
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -m deb_cfsv2`
 - Debiased ECMWF Control and Ensemble:
   - First, select your desired source (control or ensemble) for debiasing and forecasting in `subseasonal_toolkit/models/deb_ecmwf/selected_submodel.json` by setting the `forecast_with` and `debias_with` keys as described in `deb_ecmwf.ipynb`.  
-  - Then, run the selected model: `python -m subseasonal_toolkit.generate_predictions -t std_paper_ecmwf -e -u -m deb_ecmwf`
+  - Then, run the selected model: `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -m deb_ecmwf`
 - ECMWF++:
   - First generate predictions for each model configuration
   `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m ecmwfpp`
   - Then select a model configuration using the tuner
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper_ecmwf -e -u -tu -m ecmwfpp`
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -tu -m ecmwfpp`
+- FIMr1p1++:
+  - First generate predictions for each model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m fimr1p1pp`
+  - Then select a model configuration using the tuner
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -tu -m fimr1p1pp`
+- GEFS++:
+  - First generate predictions for each model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m gefspp`
+  - Then select a model configuration using the tuner
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -tu -m gefspp`
+- GEOS++:
+  - First generate predictions for each model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m geos_v2p1pp`
+  - Then select a model configuration using the tuner
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -tu -m geos_v2p1pp`
+- GEPS++:
+  - First generate predictions for each model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m gepspp`
+  - Then select a model configuration using the tuner
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -tu -m gepspp`
 - Informer:
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m informer`
 - LocalBoosting:
@@ -63,10 +105,22 @@ The following examples demonstrate how to generate contiguous US forecasts for t
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m online_learning`
 - Persistence:
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m persistence`
+- Persistence++ CCSM4:
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -u -e -m perpp_ccsm4`
 - Persistence++ CFSv2:
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m perpp_cfsv2`
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -u -e -m perpp_cfsv2`
 - Persistence++ ECMWF:
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper_ecmwf -e -u -m perpp_ecmwf`
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -u -e -m perpp_ecmwf`
+- Persistence++ FIMr1p1:
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -m perpp_fimr1p1 -u -e`
+- Persistence++ GEFS:
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -m perpp_gefs -u -e`
+- Persistence++ GEOS_v2p1:
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -m perpp_geos_v2p1 -u -e`
+- Persistence++ GEPS:
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -m perpp_geps -u -e`
+- Persistence++ NESM:
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -m perpp_nesm -u -e`
 - Prophet:
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m prophet`
 - Salient2:
@@ -75,7 +129,7 @@ The following examples demonstrate how to generate contiguous US forecasts for t
   - Then select a model configuration using the tuner
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -tu -m salient2`
 - Uniform Ensemble:
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m linear_ensemble`
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -m linear_ensemble`
 
 ## For Developers
 
