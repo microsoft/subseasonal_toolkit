@@ -2,7 +2,7 @@
 
 The `subseasonal_toolkit` package provides implementations of the subseasonal forecasting ABC model of
 
-[Adaptive Bias Correction for Subseasonal Forecasting](https://arxiv.org/pdf/.pdf)  
+[Adaptive Bias Correction for Subseasonal Forecasting](https://arxiv.org/pdf/2209.10666.pdf)  
 Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Judah Cohen, Miruna Oprescu, Ernest Fraenkel, and Lester Mackey.  Sep. 2022.
 
 ```
@@ -10,7 +10,7 @@ Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Judah Cohen, Miruna O
   mouatadid2022adaptive,
   title={Adaptive Bias Correction for Subseasonal Forecasting},
   author={Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Judah Cohen, Miruna Oprescu, Ernest Fraenkel, and Lester Mackey},
-  journal={arXiv preprint arXiv:},
+  journal={arXiv preprint arXiv:2209.10666},
   year={2022}
 }
 ```
