@@ -1,0 +1,38 @@
+{
+    "contest":
+    {
+        "default":
+        {
+            "memory": 10,
+            "cores": 8,
+            "hours": 6,
+            "minutes": 0
+        },
+        "single_target":
+        {
+                "memory": 5,
+                "cores": 1,
+                "hours": 1,
+                "minutes": 0
+        }
+    },
+    "us":
+    {
+        "default":
+        {
+            "environment": "frii_nn",
+            "memory": 40,
+            "cores": 8,
+            "hours": 12,
+            "minutes": 0
+        },
+        "single_target":
+        {
+            "environment": "frii_nn",
+            "memory": 5,
+            "cores": 1,
+            "hours": 1,
+            "minutes": 0
+        }
+    }
+}

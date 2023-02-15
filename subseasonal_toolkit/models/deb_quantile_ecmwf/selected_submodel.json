@@ -1,0 +1,26 @@
+{
+    "us_tmp2m_1.5x1.5_12w": {
+        "correction_intensity": 1.0,
+        "correction_type": "additive"
+    },
+    "us_tmp2m_1.5x1.5_34w": {
+        "correction_intensity": 1.0,
+        "correction_type": "additive"
+    },
+    "us_tmp2m_1.5x1.5_56w": {
+        "correction_intensity": 1.0,
+        "correction_type": "additive"
+    },
+    "us_precip_1.5x1.5_12w": {
+        "correction_intensity": 1.0,
+        "correction_type": "additive"
+    },
+    "us_precip_1.5x1.5_34w": {
+        "correction_intensity": 1.0,
+        "correction_type": "additive"
+    },
+    "us_precip_1.5x1.5_56w": {
+        "correction_intensity": 1.0,
+        "correction_type": "additive"
+    }
+}

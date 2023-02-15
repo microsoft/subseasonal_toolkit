@@ -1,0 +1,27 @@
+{
+    "us_tmp2m_1.5x1.5_12w": {
+        "forecast_model": "ecmwf",
+        "loess_frac": 0.1
+    },
+    "us_tmp2m_1.5x1.5_34w": {
+        "forecast_model": "ecmwf",
+        "loess_frac": 0.1
+    },
+    "us_tmp2m_1.5x1.5_56w": {
+        "forecast_model": "ecmwf",
+        "loess_frac": 0.1
+    },
+    "us_precip_1.5x1.5_12w": {
+        "forecast_model": "ecmwf",
+        "loess_frac": 0.1
+    },
+    "us_precip_1.5x1.5_34w": {
+        "forecast_model": "ecmwf",
+        "loess_frac": 0.1
+    },
+    "us_precip_1.5x1.5_56w": {
+        "forecast_model": "ecmwf",
+        "loess_frac": 0.1
+    }
+}
+

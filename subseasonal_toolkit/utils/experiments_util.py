@@ -133,7 +133,8 @@ def get_first_year(data_id):
     """
     if (data_id.startswith("subx_cfsv2") or data_id.startswith("iri_cfsv2") or
         data_id.startswith("iri_ccsm4") or data_id.startswith("iri_fimr1p1") or
-        data_id.startswith("iri_geos") or data_id.startswith("iri_nesm")):
+        data_id.startswith("iri_geos") or data_id.startswith("iri_nesm") or 
+        data_id.startswith("iri_subx_mean")):
         return 1999
     if data_id.startswith("iri_gefs"):
         return 1989

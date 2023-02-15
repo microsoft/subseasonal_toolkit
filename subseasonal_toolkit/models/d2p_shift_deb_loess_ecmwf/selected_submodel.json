@@ -1,0 +1,92 @@
+{
+  "us_precip_1.5x1.5_12w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_precip_1.5x1.5_34w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_precip_1.5x1.5_56w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_tmp2m_1.5x1.5_12w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_tmp2m_1.5x1.5_34w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_tmp2m_1.5x1.5_56w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_precip_p1_1.5x1.5_12w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_precip_p1_1.5x1.5_34w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_precip_p1_1.5x1.5_56w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_tmp2m_p1_1.5x1.5_12w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_tmp2m_p1_1.5x1.5_34w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_tmp2m_p1_1.5x1.5_56w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_precip_p3_1.5x1.5_12w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_precip_p3_1.5x1.5_34w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_precip_p3_1.5x1.5_56w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_tmp2m_p3_1.5x1.5_12w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_tmp2m_p3_1.5x1.5_34w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  },
+  "us_tmp2m_p3_1.5x1.5_56w":
+  {
+    "first_year": 1981,
+    "last_year": 2010
+  }
+}

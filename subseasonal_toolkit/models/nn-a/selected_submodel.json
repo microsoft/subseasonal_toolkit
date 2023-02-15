@@ -1,0 +1,32 @@
+{ 
+    "us_precip_1.5x1.5_12w": 
+    {
+        "horizon": "12w",
+        "num_epochs": 10001
+    },
+    "us_precip_1.5x1.5_34w":
+    {
+        "horizon": "34w",
+        "num_epochs": 10001
+    },
+    "us_precip_1.5x1.5_56w":
+    {
+        "horizon": "56w",
+        "num_epochs": 10001
+    },
+    "us_tmp2m_1.5x1.5_12w": 
+    {
+        "horizon": "12w",
+        "num_epochs": 10001
+    },
+    "us_tmp2m_1.5x1.5_34w": 
+    {
+        "horizon": "34w",
+        "num_epochs": 10001
+    },
+    "us_tmp2m_1.5x1.5_56w":
+    {
+        "horizon": "56w",
+        "num_epochs": 10001
+    }
+}

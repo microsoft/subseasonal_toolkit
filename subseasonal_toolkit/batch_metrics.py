@@ -42,7 +42,7 @@ parser = ArgumentParser()
 parser.add_argument("pos_vars", nargs="*")  # gt_id and horizon
 parser.add_argument('--target_dates', '-t', default='std_paper')
 # For metrics, 1 or more values expected => creates a list
-parser.add_argument("--metrics", '-m', nargs="+", type=str, default=['rmse', 'score', 'skill', 'lat_lon_rmse', 'lat_lon_skill'], help="Space-separated list of error metrics to compute (valid choices are rmse, score, skill, lat_lon_rmse, lat_lon_skill, lat_lon_anom, mse, wtd_mse)")
+parser.add_argument("--metrics", '-m', nargs="+", type=str, default=['rmse', 'score', 'skill', 'lat_lon_rmse', 'lat_lon_skill'], help="Space-separated list of error metrics to compute (valid choices are rmse, score, skill, anom, error, lat_lon_rmse, lat_lon_skill, lat_lon_anom, lat_lon_pred, mse, wtd_mse)")
 parser.add_argument('--model_name', '-mn', default=None)
 parser.add_argument('--submodel_name', '-sn', default=None)
 args = parser.parse_args()
@@ -108,7 +108,7 @@ for metric in metrics:
     metric_dfs[metric].index.name = 'start_date'
     if metric == 'wtd_mse':
         weights = None
-    if 'skill' in metric or 'lat_lon' in metric:
+    if 'skill' in metric or 'lat_lon' in metric or 'anom' in metric:
         # Load climatology
         printf('Loading climatology and replacing start date with month-day')
         tic()
@@ -125,6 +125,14 @@ for metric in metrics:
         # Keep track of number of dates contributing to error calculation
         # Initialize dataframe later
         num_dates_lla = 0
+    if metric == 'lat_lon_pred':
+        # Keep track of number of dates contributing to error calculation
+        # Initialize dataframe later
+        num_dates_llp = 0
+    if metric == 'lat_lon_error':
+        # Keep track of number of dates contributing to error calculation
+        # Initialize dataframe later
+        num_dates_lle = 0
 
 # Fill the error dfs for given target date
 def get_rmse(pred, gt):
@@ -142,6 +150,12 @@ def get_wtd_mse(pred, gt, weights):
 
 def get_skill(pred, gt, clim):
     return 1 - cosine(pred-clim, gt-clim)
+
+def get_anom(pred, clim):
+    return (pred-clim).mean()
+
+def get_error(pred, gt):
+    return (pred-gt).mean()
 
 tic()
 for file_path, target_date_obj in zip(file_paths, target_date_objs):
@@ -185,6 +199,16 @@ for file_path, target_date_obj in zip(file_paths, target_date_objs):
             metric_dfs['rmse'].loc[target_date_obj] = rmse
         if 'score' in metrics:
             metric_dfs['score'].loc[target_date_obj] = mean_rmse_to_score(rmse)
+    if 'anom' in metrics:
+        month_day = (target_date_obj.month, target_date_obj.day)
+        if month_day == (2,29):
+            printf('--Using Feb. 28 climatology for Feb. 29')
+            month_day = (2,28)
+        anom = get_anom(preds, clim.loc[month_day])
+        metric_dfs['anom'].loc[target_date_obj] = anom
+    if 'error' in metrics:
+        error = get_error(preds, gt.loc[target_date_obj])
+        metric_dfs['error'].loc[target_date_obj] = error
     if 'skill' in metrics:
         month_day = (target_date_obj.month, target_date_obj.day)
         if month_day == (2,29):
@@ -200,6 +224,14 @@ for file_path, target_date_obj in zip(file_paths, target_date_objs):
         else:
             metric_dfs['lat_lon_rmse'] += sqd_error
         num_dates += 1
+    if 'lat_lon_error' in metrics:
+        error = preds - gt.loc[target_date_obj]
+        if num_dates_lle == 0:
+            metric_dfs['lat_lon_error'] = error
+            metric_dfs['lat_lon_error'].name = 'lat_lon_error'
+        else:
+            metric_dfs['lat_lon_error'] += error
+        num_dates_lle += 1
     if 'lat_lon_skill' in metrics:
         month_day = (target_date_obj.month, target_date_obj.day)
         if month_day == (2,29):
@@ -210,8 +242,7 @@ for file_path, target_date_obj in zip(file_paths, target_date_objs):
             lat_lon_skill_u, lat_lon_skill_v = pd.DataFrame(index=preds.index), pd.DataFrame(index=preds.index) 
         lat_lon_skill_u[target_date_str] = preds - clim.loc[month_day]
         lat_lon_skill_v[target_date_str] = gt.loc[target_date_obj] - clim.loc[month_day]
-        num_dates_lls += 1 
-        
+        num_dates_lls += 1    
     if 'lat_lon_anom' in metrics:
         month_day = (target_date_obj.month, target_date_obj.day)
         if month_day == (2,29):
@@ -224,10 +255,23 @@ for file_path, target_date_obj in zip(file_paths, target_date_objs):
         else:
             metric_dfs['lat_lon_anom'] += anom
         num_dates_lla += 1    
+    if 'lat_lon_pred' in metrics:
+        if num_dates_llp == 0:
+            metric_dfs['lat_lon_pred'] = preds
+            metric_dfs['lat_lon_pred'].name = 'lat_lon_pred'
+        else:
+            metric_dfs['lat_lon_pred'] += preds
+        num_dates_llp += 1    
     toc()
     
+
+if 'lat_lon_pred' in metric_dfs:
+    # Replace preds sum with mean preds
+    metric_dfs['lat_lon_pred'] /= num_dates_llp
+    metric_dfs['lat_lon_pred'] = metric_dfs['lat_lon_pred']  
+    
 if 'lat_lon_anom' in metric_dfs:
-    # Replace error sum with RMSE
+    # Replace preds sum with mean preds
     metric_dfs['lat_lon_anom'] /= num_dates_lla
     metric_dfs['lat_lon_anom'] = metric_dfs['lat_lon_anom']   
     
@@ -241,6 +285,11 @@ if 'lat_lon_rmse' in metric_dfs:
     # Replace error sum with RMSE
     metric_dfs['lat_lon_rmse'] /= num_dates
     metric_dfs['lat_lon_rmse'] = np.sqrt(metric_dfs['lat_lon_rmse'])
+    
+if 'lat_lon_error' in metric_dfs:
+    # Replace error sum with RMSE
+    metric_dfs['lat_lon_error'] /= num_dates_lle  
+
 toc()
 
 # Create output directory if it doesn't exist

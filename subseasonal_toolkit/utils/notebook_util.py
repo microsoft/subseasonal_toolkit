@@ -17,22 +17,23 @@ def isnotebook():
     except NameError:
         return False      # Probably standard Python interpreter
 
-def call_notebook(ntbk, extra_args = ""):
+def call_notebook(ntbk, extra_args = "", nbconvert = True):
     """Converts a jupyter notebook to a Python script and executes it with 
     commandline arguments
 
     Args:
       ntbk - file name of jupyter notebook ending in .ipynb
       extra_args - string containing extra command line args to pass to notebook
+      nbconvert - if False, skips nbconvert step and calls an existing Python script
     """
-    tic()
-    # Convert jupyter notebook to script and remove extraneous folders generated 
-    # by nbconvert
-    output = os.path.abspath(ntbk).replace(".ipynb","")
-    subprocess.call(f'jupyter nbconvert --to script "{ntbk}"; '
+    if nbconvert:
+        tic()
+        # Convert jupyter notebook to script and remove extraneous folders generated 
+        # by nbconvert
+        subprocess.call(f'jupyter nbconvert --to script "{ntbk}"; '
                     'rm -rf nbconvert; mv \~ deleteme; rm -rf deleteme',
                     shell=True)
-    toc()
+        toc()
     # Reconstruct command-line arguments and pass to script
     cmd_args = " ".join(map(shlex.quote, sys.argv[1:]))
     script = ntbk.replace(".ipynb",".py")

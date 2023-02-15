@@ -1,0 +1,12 @@
+{
+    "us":
+    {
+        "std_paper_forecast":
+        {
+            "memory": 4,
+            "cores": 1,
+            "hours": 10,
+            "minutes": 0
+        }
+    }
+}

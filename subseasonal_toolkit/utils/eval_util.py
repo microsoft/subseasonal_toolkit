@@ -68,6 +68,7 @@ def get_target_dates(date_str="std_test", horizon=None):
         "std_contest_eval_daily" for daily contest dates during the contest period for 2010-2018
         "std_paper" for biweekly Wednesdays for the period Jan 2011-2020, for paper performance metrics 
         "std_paper_forecast" daily dates for the period Jan 2018-2021, for paper performance metrics 
+        "std_paper_subxmean" daily dates for the period Jan 1999-2021, for paper performance metrics 
         "std_paper_eval" daily dates for the period Jan 2015-2021, for model tuning for paper,
         "std_paper_ecmwf" Tuesdays and Fridays from 2016 through end of 2020 (available ECMWF data),
         "cold_texas" for Texas cold wave (Feb. 11 - 18, 2021),
@@ -208,6 +209,12 @@ def get_target_dates(date_str="std_test", horizon=None):
         # return sorted(set(multiyear_dates), key=lambda x: multiyear_dates.index(x)) # Could improve efficiency 
         return multiyear_dates
 
+    elif date_str == "std_paper_subxmean":
+        ''' 
+        Paper performance evaluation period, daily from 1999-2021. 
+        '''
+        first_year = 1999
+        number_of_days = 365 * 16 + 366 * 7
     elif date_str == "std_paper_forecast":
         ''' 
         Paper performance evaluation period, daily from 2018-2021. 

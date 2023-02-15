@@ -51,6 +51,22 @@ def get_submodel_name(model, *args, **kwargs):
         return attr.get_submodel_name(*args, **kwargs)
     except (ModuleNotFoundError, AttributeError, FileNotFoundError, KeyError) as e:
         return None
+    
+def get_d2p_submodel_names(model, *args, **kwargs):
+    """Returns list of submodel names to be used in forming a probabilistic
+    forecast using the d2p model
+
+    Args:
+      model: string model name
+      gt_id: ground truth identifier in {"contest_tmp2m", "contest_precip"}
+      target_horizon: string in {"34w", "56w"}
+    """
+    try:
+        attr = import_module(f"subseasonal_toolkit.models.{model}.attributes")
+        return attr.get_d2p_submodel_names(*args, **kwargs)
+    except (ModuleNotFoundError, AttributeError, FileNotFoundError, KeyError) as e:
+        return None
+
 
 def get_task_forecast_dir(model="spatiotemporal_mean",
                           submodel=None,

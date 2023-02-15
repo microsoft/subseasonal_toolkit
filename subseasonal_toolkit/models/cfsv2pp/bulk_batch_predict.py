@@ -55,7 +55,7 @@ else:
     raise ValueError(f"invalid horizon {horizon}")
     
 module_str = f"-m subseasonal_toolkit.models.{model_name}.batch_predict"
-if cmd_prefix != "python":
+if cmd_prefix.strip() != "python":
     # Include quotes for batch invocation
     module_str = f"\"{module_str}\""
 

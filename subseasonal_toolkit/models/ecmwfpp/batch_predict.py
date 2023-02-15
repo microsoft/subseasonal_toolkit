@@ -1,4 +1,4 @@
-# Predicts outcomes using cfsv2++
+# Predicts outcomes using ECMWF++
 #
 # Example usages:
 #   python src/models/ecmwfpp/batch_predict.py contest_tmp2m 34w -t std_val -i True -y all -m None
@@ -6,7 +6,7 @@
 #   python src/models/ecmwfpp/batch_predict.py contest_precip 34w -t std_val -i True -y all -m 56 -d 35
 #
 # Positional args:
-#   gt_id: contest_tmp2m, contest_precip, us_tmp2m, or us_precip
+#   gt_id: e.g., contest_tmp2m, contest_precip, us_tmp2m, or us_precip
 #   horizon: 12w, 34w, or 56w
 #
 # Named args:
@@ -23,6 +23,11 @@
 #   --loss (-l): loss function: mse, rmse, skill, or ssm (default: "mse")
 #   --first_lead (-fl): first ecmwf lead to average into forecast (0-29) (default: 0)
 #   --last_lead (-ll): last ecmwf lead to average into forecast (0-29) (default: 29)
+#   --forecast_with (-fw): Generate forecast using the control (c),
+#     average perturbed (p), single perturbed (p1, ..., p50), 
+#     or perturbed-control ensemble (p+c) ECMWF forecast; (default: "c")
+#   --debias_with (-dw): Debias using the control (c), average perturbed (p), 
+#     or perturbed-control ensemble (p+c) ECMWF reforecast; (default: "c")
 import os
 from subseasonal_toolkit.utils.notebook_util import call_notebook
 from pkg_resources import resource_filename

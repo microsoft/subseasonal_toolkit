@@ -3,15 +3,15 @@
 #
 # Example usage:
 #   python src/models/linear_ensemble/batch_predict.py contest_tmp2m 34w -t std_test
-#   python src/models/linear_ensemble/batch_predict.py contest_tmp2m 34w -t std_contest -m cfsv2pp perpp climpp 
+#   python src/models/linear_ensemble/batch_predict.py contest_tmp2m 34w -t std_contest -m cfsv2pp,perppmclimpp 
 #
 # Positional args:
 #   gt_id: contest_tmp2m or contest_precip
 #   horizon: 34w or 56w
 #
 # Named args:
-#   --model_names (-m): target models (and submodel, if applicable), to be specified separated by a whitespace,
-#                       e.g. spatiotemporal_mean:spatiotemporal_mean-1981_2016 lrr
+#   --model_names (-m): target models (and submodel, if applicable), to be specified separated by commas,
+#                       e.g. spatiotemporal_mean:spatiotemporal_mean-1981_2016,lrr
 #   --target_dates (-t): target dates for batch prediction (default: 'std_test')
 
 import os
@@ -28,7 +28,7 @@ from joblib import Parallel, delayed
 from subseasonal_toolkit.utils.models_util import save_forecasts, get_forecast_filename
 from subseasonal_toolkit.utils.eval_util import get_target_dates
 from subseasonal_toolkit.utils.general_util import printf, set_file_permissions, make_directories, symlink
-from subseasonal_toolkit.models.linear_ensemble.attributes import get_submodel_name
+from subseasonal_toolkit.models.linear_ensemble.attributes import get_submodel_name, get_model_names
 
 from subseasonal_data import data_loaders
 
@@ -64,10 +64,7 @@ forecast = args.forecast
 
 # Perpare input models
 if forecast is not None:
-    if horizon == '12w':
-        model_string = f'tuned_{forecast}pp,perpp_{forecast}' 
-    else:
-         model_string = f'tuned_climpp,tuned_{forecast}pp,perpp_{forecast}'
+    model_string = get_model_names(forecast, horizon=horizon)
 models = model_string.split(',')
 models.sort()
 model_string = (",").join(models)

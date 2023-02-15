@@ -23,7 +23,7 @@
 #   python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -b -m climpp
 # Example usage (run tuner to select a submodel for each target date):
 #   python -m subseasonal_toolkit.generate_predictions -t std_paper -tu -m climpp
-# Example usage (run abc to select a submodel for each target date):
+# Example usage (run abc for each target date):
 #   python -m subseasonal_toolkit.generate_predictions -t std_paper -a -m cfsv2
 # Example usage (run using a custom command in place of the default "python"):
 #   python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -u -e -m perpp_cfsv2 -c src/batch/batch_python.sh
@@ -44,6 +44,8 @@
 #     contiguous US at 1 x 1 resolution; if neither usa nor ecmwf is specified, will 
 #     generate predictions for the 1 x 1 resolution Western US contest region
 #   --tuned (-tu): generate predictions using tuned version of model
+#   --d2p: generate predictions using deterministic to probabilistic (d2p) 
+#     version of model
 #   --bulk (-b): generate predictions using all submodels of a given model
 #   --abc (-a): generate predictions using abc version of model
 #   --task: generate predictions for a specific task specified in the format 
@@ -76,6 +78,7 @@ parser.add_argument('--usa', '-u', default=False, action='store_true')
 parser.add_argument('--s2s', '-s', default=False, action='store_true')
 parser.add_argument('--task', '-ta', default=None)
 parser.add_argument('--tuned', '-tu', default=False, action='store_true')
+parser.add_argument('--d2p', default=False, action='store_true')
 parser.add_argument('--bulk', '-b', default=False, action='store_true')
 parser.add_argument('--ecmwf', '-e', default=False, action='store_true')
 parser.add_argument('--abc', '-a', default=False, action='store_true')
@@ -90,12 +93,13 @@ usa = args.usa
 s2s = args.s2s
 task = args.task
 tuned = args.tuned
+d2p = args.d2p
 bulk = args.bulk
 ecmwf = args.ecmwf
 abc = args.abc
 printf(f"Running generate predictions with arguments models={models}, deadline_date={deadline_date},"
        f"target_date={target_date}, cmd_prefix={cmd_prefix}, usa={usa}, task={task},"
-       f"tuned={tuned}, bulk={bulk}, ecmwf={ecmwf}, abc={abc}")
+       f"tuned={tuned}, d2p={d2p}, bulk={bulk}, ecmwf={ecmwf}, abc={abc}")
 
 # Process command-line arguments
 metrics_prefix = cmd_prefix
@@ -107,6 +111,7 @@ model_dependency = ""
 cmd_suffix = ""
 cluster_str = ""
 tuned_prefix = "tuned_" if tuned else ""
+d2p_prefix = "d2p_" if d2p else ""
 
 # Get task string and assign task parameters
 if task is not None:
@@ -115,7 +120,10 @@ if task is not None:
     hz_iteration = [horizon]
 else:            
     hz_iteration = ["12w", "34w", "56w"]
-    if ecmwf:
+    if d2p:
+        gt_iteration = ['us_tmp2m_p1_1.5x1.5', 'us_precip_p1_1.5x1.5',
+                        'us_tmp2m_p3_1.5x1.5', 'us_precip_p3_1.5x1.5']        
+    elif ecmwf:
         gt_iteration = ['us_tmp2m_1.5x1.5', 'us_precip_1.5x1.5']
     elif s2s:
         gt_iteration = ['global_tmp2m_p1_1.5x1.5', 'global_precip_p1_1.5x1.5',
@@ -149,7 +157,7 @@ for model, gt_id, horizon in product(models, gt_iteration, hz_iteration):
     # Get list of targets
     target_list = get_target_dates(target_date_str, horizon)
 
-    if not tuned and not bulk and not abc:
+    if not tuned and not d2p and not bulk and not abc:
         '''
         Get parameters for selected submodel
         '''
@@ -218,6 +226,9 @@ for model, gt_id, horizon in product(models, gt_iteration, hz_iteration):
     if tuned:
         predict_script = resource_filename(__name__, os.path.join("models","tuner","batch_predict.py"))
         cmd = f"{cmd_prefix} {cluster_str} \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} -mn {model} -y 3 -m None {cmd_suffix}"
+    elif d2p:
+        predict_script = resource_filename(__name__, os.path.join("models","d2p","batch_predict.py"))
+        cmd = f"{cmd_prefix} {cluster_str} \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} -mn {model} {cmd_suffix}"
     elif bulk:
         predict_script = resource_filename(__name__, os.path.join("models",model,"bulk_batch_predict.py"))
         cmd = f"python \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} -c \"{cmd_prefix} {cluster_str}\" {cmd_suffix}"
@@ -241,7 +252,7 @@ for model, gt_id, horizon in product(models, gt_iteration, hz_iteration):
     Run dependent job for metric generation on named target_date ranges
     '''
     if not bulk and not abc and target_date_str in get_named_targets():
-        metrics = "wtd_mse" if s2s else "rmse score skill lat_lon_rmse lat_lon_skill"
-        metrics_cmd=f"{metrics_prefix} {model_dependency} {metrics_script} {gt_id} {horizon} -mn {tuned_prefix}{model} -t {target_date_str} -m {metrics}"
+        metrics = "wtd_mse" if s2s else "rmse score skill lat_lon_rmse lat_lon_skill lat_lon_error"
+        metrics_cmd=f"{metrics_prefix} {model_dependency} {metrics_script} {gt_id} {horizon} -mn {tuned_prefix}{d2p_prefix}{model} -t {target_date_str} -m {metrics}"
         printf(f"Running metrics {metrics_cmd}")
         subprocess.call(metrics_cmd, shell=True)

@@ -3,7 +3,7 @@
 # in a window of margin_in_days around the target month-day combination
 #
 # Example usage:
-#   python src/models/tuner/batch_predict.py contest_tmp2m 34w -t std_val -l rmse -y 26 -m 7
+#   python src/models/tuner/batch_predict.py contest_tmp2m 34w -t std_val -y 26 -m 7
 #
 # Positional args:
 #   gt_id: contest_tmp2m or contest_precip
