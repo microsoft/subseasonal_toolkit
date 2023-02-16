@@ -1,4 +1,4 @@
 from setuptools import setup
 
 # configuration is all pulled from setup.cfg
-setup()
+setup(include_package_data=True)

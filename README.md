@@ -30,10 +30,31 @@ Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Miruna Oprescu, Judah
 }
 ```
 
+## System Requirements
+
+This package has been tested with the following operating system and Python pairings:
++ macOS Monterey 12.6.3 with Python 3.9.12
++ Linux CentOS 7 with Python 3.7.9
+
+A complete list of Python dependencies can be found in `setup.cfg`; these dependencies are required upon installation.
+
 ## Getting Started
 
 - Install the subseasonal toolkit package: `pip install subseasonal-toolkit`
+  - Installation completed in under 1 minute with pip 22.2.2 on a 2021 MacBook Pro with 16 GB of RAM running macOS Monterey version 12.6.3.
 - Define the environment variable `$SUBSEASONALDATA_PATH` to point to your desired data directory; any data files needed by a model will be read from, saved to, or synced with this directory
+- Run the following demo which generates and evaluates Raw CFSv2 precipitation forecasts across the contiguous U.S. for the 2018-2021 `std_paper_forecast` evaluation period of "Adaptive Bias Correction for Subseasonal Forecasting":
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -u -e -m raw_cfsv2 --task us_tmp2m_1.5x1.5_34w`
+  - This demo ran to completion in 7 minutes with Python 3.9.12 on a 2021 MacBook Pro with 16 GB of RAM running macOS Monterey version 12.6.3.
+  - Expected outputs 
+    - A forecast folder `models/cfsv2pp/submodel_forecasts/cfsv2pp-debiasFalse_years12_margin0_days1-1_leads15-15_lossmse/us_tmp2m_1.5x1.5_34w/` containing daily forecast files from 20180101 through 20211231
+    - A metrics folder `eval/metrics/raw_cfsv2/submodel_forecasts/cfsv2pp-debiasFalse_years12_margin0_days1-1_leads15-15_lossmse/us_tmp2m_1.5x1.5_34w/` containing 6 evaluation metrics:
+      - `lat_lon_error-us_tmp2m_1.5x1.5_34w-std_paper_forecast.h5`
+      - `lat_lon_rmse-us_tmp2m_1.5x1.5_34w-std_paper_forecast.h5`
+      - `lat_lon_skill-us_tmp2m_1.5x1.5_34w-std_paper_forecast.h5`
+      - `rmse-us_tmp2m_1.5x1.5_34w-std_paper_forecast.h5`
+      - `score-us_tmp2m_1.5x1.5_34w-std_paper_forecast.h5`
+      - `skill-us_tmp2m_1.5x1.5_34w-std_paper_forecast.h5`
 
 ## Generating Model Forecasts
 

@@ -114,6 +114,7 @@ def get_metrics_df(gt_id= "contest_precip",
             filename_model_name_path = glob(f'models/*/submodel_forecasts/{sn}')[0]
             filename_model_name = os.path.basename(os.path.normpath(Path(filename_model_name_path).resolve().parents[1]))
             filename = in_file.substitute(model=filename_model_name, sn=sn, task=task, metric=metric, target_dates=target_dates)
+            printf(filename)
             # Load metric dataframe
             try:
                 model_df = pd.read_hdf(filename).rename({metric: model_name}, axis=1)
@@ -205,14 +206,27 @@ all_model_names = {
     "raw_fimr1p1": "FIMr1p1",
     "raw_gefs": "GEFS",
     "raw_gem": "GEM",
-    "abc_ccsm4": "ABC - CCSM4",
-    "abc_cfsv2": "ABC - CFSv2",
-    "abc_geos_v2p1": "ABC - GEOS_V2p1",
+    "raw_subx_mean": "SubX",
+    "deb_subx_mean": "Debiased SubX",
+    "abc_ccsm4": "ABC-CCSM4",
+    "abc_cfsv2": "ABC-CFSv2",
+    "abc_geos_v2p1": "ABC-GEOS_V2p1",
     "abc_nesm": "ABC - NESM",
-    "abc_fimr1p1": "ABC - FIMr1p1",
-    "abc_gefs": "ABC - GEFS",
-    "abc_gem": "ABC - GEM",    
-    "abc_ecmwf": "ABC - ECMWF",    
+    "abc_fimr1p1": "ABC-FIMr1p1",
+    "abc_gefs": "ABC-GEFS",
+    "abc_gem": "ABC-GEM",    
+    "abc_ecmwf": "ABC-ECMWF",    
+    "abc_subx_mean": "ABC-SubX",    
+    "nn-a": "NN-A", 
+    "deb_loess_ecmwf": "LOESS-ECMWF", 
+    "deb_loess_cfsv2": "LOESS-CFSv2", 
+    "deb_quantile_ecmwf": "QM-ECMWF", 
+    "deb_quantile_cfsv2": "QM-CFSv2",
+    "abcds_ecmwf": "ABC-ECMWF",
+    "shift_deb_loess_ecmwf": "LOESS-ECMWF",
+    "shift_deb_loess_cfsv2": "LOESS-CFSv2",
+    "shift_deb_quantile_ecmwf": "QM-ECMWF",
+    "shift_deb_quantile_cfsv2": "QM-CFSv2",
 }
 
 
@@ -279,6 +293,22 @@ def get_plot_params_horizontal(subplots_num=1):
         plot_params = {'nrows': 3, 'ncols': 3, 'height_ratios': [20, 20, 20, 0.1], 'width_ratios': [20, 20, 20], 
                        'figsize_x': 6,'figsize_y': 3, 'fontsize_title': 30, 'fontsize_suptitle': 30, 'fontsize_ticks': 30, 
                        'y_sup_title':1.05, 'y_sup_fontsize':30}
+    elif subplots_num in [7, 9]:
+        plot_params = {'nrows': 4, 'ncols': 3, 'height_ratios': [30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 2,'figsize_y': 2, 'fontsize_title': 12, 'fontsize_suptitle': 14, 'fontsize_ticks': 6, 
+                       'y_sup_title':1, 'y_sup_fontsize':16}
+#     elif subplots_num in [12]:
+#         plot_params = {'nrows': 5, 'ncols': 3, 'height_ratios': [15, 15, 15, 15, 0.1], 'width_ratios': [20, 20, 20], 
+#                        'figsize_x': 3,'figsize_y': 5, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
+#                        'y_sup_title':0.95, 'y_sup_fontsize':20}
+    elif subplots_num in [12]:
+        plot_params = {'nrows': 5, 'ncols': 3, 'height_ratios': [30, 30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 2,'figsize_y': 3.25, 'fontsize_title': 15, 'fontsize_suptitle': 17, 'fontsize_ticks': 9, 
+                       'y_sup_title':0.97, 'y_sup_fontsize':19}
+#     elif subplots_num in [12]:
+#         plot_params = {'nrows': 5, 'ncols': 3, 'height_ratios': [30, 30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+#                        'figsize_x': 2,'figsize_y': 3.25, 'fontsize_title': 20, 'fontsize_suptitle': 22, 'fontsize_ticks': 10, 
+#                        'y_sup_title':0.97, 'y_sup_fontsize':22}        
     return plot_params
 
 def get_plot_params_vertical(subplots_num=1):
@@ -312,12 +342,20 @@ def get_plot_params_vertical(subplots_num=1):
                        'figsize_x': 7,'figsize_y': 1.25, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
                        'y_sup_title':0.95, 'y_sup_fontsize':20}
     elif subplots_num in [12]:
-        plot_params = {'nrows': 5, 'ncols': 3, 'height_ratios': [15, 15, 15, 15, 0.1], 'width_ratios': [20, 20, 20], 
-                       'figsize_x': 3,'figsize_y': 5, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
-                       'y_sup_title':0.95, 'y_sup_fontsize':20}
+        plot_params = {'nrows': 5, 'ncols': 3, 'height_ratios': [30, 30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 2,'figsize_y': 3.25, 'fontsize_title': 15, 'fontsize_suptitle': 17, 'fontsize_ticks': 9, 
+                       'y_sup_title':0.97, 'y_sup_fontsize':19}
+#     elif subplots_num in [12]:
+#         plot_params = {'nrows': 5, 'ncols': 3, 'height_ratios': [30, 30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+#                        'figsize_x': 2,'figsize_y': 3.25, 'fontsize_title': 20, 'fontsize_suptitle': 22, 'fontsize_ticks': 10, 
+#                        'y_sup_title':0.97, 'y_sup_fontsize':22}
     elif subplots_num in [15, 18]:
         plot_params = {'nrows': 7, 'ncols': 3, 'height_ratios': [10, 10, 10, 10, 10, 10, 0.1], 'width_ratios': [20, 20, 20], 
                        'figsize_x': 3,'figsize_y': 10, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.915, 'y_sup_fontsize':20}
+    elif subplots_num in [21]:
+        plot_params = {'nrows': 8, 'ncols': 3, 'height_ratios': [12, 12, 12, 12, 12, 12, 12, 0.05], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 3,'figsize_y': 15, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
                        'y_sup_title':0.915, 'y_sup_fontsize':20}
     return plot_params
 
@@ -385,6 +423,98 @@ color_dic[('lat_lon_error','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorba
                    'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
                    'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
 
+color_dic[('lat_lon_anom','precip', '12w')] = {'colorbar_min_value': 15, 'colorbar_max_value': 85, 
+                   'color_map_str': color_map_str_anom, 'cb_skip': 5,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_anom','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                       
+color_dic[('lat_lon_anom','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 5,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('lat_lon_anom','tmp2m', '12w')] = {'colorbar_min_value': 65, 'colorbar_max_value': 85, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_anom','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_anom','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+
+color_dic[('lat_lon_rpss','precip', '12w')] = {'colorbar_min_value': 15, 'colorbar_max_value': 85, 
+                   'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_rpss','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                       
+color_dic[('lat_lon_rpss','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('lat_lon_rpss','tmp2m', '12w')] = {'colorbar_min_value': 65, 'colorbar_max_value': 85, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_rpss','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_rpss','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_crps','precip', '12w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                   'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_crps','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                    'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                       
+color_dic[('lat_lon_crps','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('lat_lon_crps','tmp2m', '12w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_crps','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_crps','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+
 
 
 def get_models_metric_lat_lon(gt_id='us_precip', horizon='56w', target_dates='std_paper', metrics = ['skill'], model_names=['cfsv2pp']):
@@ -417,12 +547,13 @@ def get_models_metric_lat_lon(gt_id='us_precip', horizon='56w', target_dates='st
 
     return metric_dfs
 
-def plot_metric_maps(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=None, show=True, scale_type='linear', CB_colors_customized=[], CB_minmax=[], zoom=False, feature='mei_shift45', bin_str="decile 1"):
+def plot_metric_maps(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=None, show=True, scale_type='linear', CB_colors_customized=[], CB_minmax=[], CB_skip=None, zoom=False, feature='mei_shift45', bin_str="decile 1"):
+    
     if (scale_type=="linear") and (CB_colors_customized!=[]) and (CB_minmax!=[]):
-        plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=mean_metric_df, show=True, scale_type=scale_type, CB_colors_customized=CB_colors_customized, CB_minmax=CB_minmax, zoom=zoom)
+        plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=mean_metric_df, show=True, scale_type=scale_type, CB_colors_customized=CB_colors_customized, CB_minmax=CB_minmax, CB_skip=CB_skip, zoom=zoom)
     
     elif scale_type=='linear':
-        plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=mean_metric_df, show=True, scale_type=scale_type, CB_colors_customized=[],zoom=zoom)
+        plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=mean_metric_df, show=True, scale_type=scale_type, CB_colors_customized=[], CB_skip=CB_skip, zoom=zoom)
     
     elif scale_type == "linear_darkgreen":
         plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=mean_metric_df, show=True, scale_type=scale_type, CB_colors_customized=['magenta', 'white', 'darkgreen'])
@@ -434,7 +565,7 @@ def plot_metric_maps(metric_dfs, model_names, gt_ids, horizons, metric, target_d
         plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=mean_metric_df, show=True, scale_type=scale_type)
         
         
-def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=None, show=True, scale_type="linear", CB_colors_customized=None, CB_minmax=[], zoom=False):
+def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=None, show=True, scale_type="linear", CB_colors_customized=None, CB_minmax=[], CB_skip = None, zoom=False):
     
     #Make figure with compared models plots
     tasks = [f"{t[0]}_{t[1]}" for t in product(gt_ids, horizons)]
@@ -477,13 +608,14 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
         lons_edges = np.asarray(list(range(int(lons[0]), (int(lons[-1])+1)+1))) - 0.5
         lat_grid, lon_grid = np.meshgrid(lats_edges,lons_edges)
     
-
+    
     for i, xy in enumerate(product(model_names, tasks)):
         if i >= subplots_num:
             break
     
         model_name, task = xy[0], xy[1]
 #         x, y = tasks.index(task), model_names.index(model_name)
+        
         x, y = model_names.index(model_name), tasks.index(task)
         
         ax = fig.add_subplot(gs[x,y], projection=ccrs.PlateCarree(), aspect="auto")
@@ -492,7 +624,8 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
         
         df_models = metric_dfs[task][metric]
         if 'skill' in metric:
-            df_models =df_models.apply(lambda x: x*100)      
+            df_models =df_models.apply(lambda x: x*100)  
+        
         df_models, model_names = format_df_models(df_models, model_names)  
         
         data_matrix = pivot_model_output(df_models, model_name=model_name)
@@ -503,7 +636,9 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
             ax.add_feature(cfeature.STATES.with_scale('110m'), edgecolor='gray', linewidth=0.3)
         elif target_dates.startswith('std_paper_forecast'):
             ax.coastlines(linewidth=0.3, color='gray')
-            ax.add_feature(cfeature.STATES.with_scale('110m'), edgecolor='gray', linewidth=0.05, linestyle=':')
+            ax.add_feature(cfeature.STATES.with_scale('110m'), edgecolor='gray', linewidth=0.05, linestyle=':', zorder=10)
+#             ax.coastlines(linewidth=0.3, color='gray')
+#             ax.add_feature(cfeature.STATES.with_scale('110m'), edgecolor='gray', linewidth=0.05, linestyle=':')
         elif target_dates.startswith('20210209') or target_dates.startswith('ar_wc') or target_dates.startswith('201810') or target_dates.startswith('hurricane_michael'):
             ax.coastlines(linewidth=0.5, color='gray')
             ax.add_feature(cfeature.STATES.with_scale('110m'), edgecolor='gray', linewidth=0.5)
@@ -524,7 +659,7 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
             colorbar_max_value = CB_minmax[1]
         
         color_map_str = color_dic[(metric, gt_var, horizon)]['color_map_str'] 
-        
+
         
         if CB_colors_customized is not None:
             if CB_colors_customized == []:
@@ -584,11 +719,24 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
                         df_mean_metric = df_mean_metric.drop(df_mean_metric.loc[(df_mean_metric.lat==lat_exc) & (df_mean_metric.lon==lon_exc), :].index)
     
         if mean_metric_df is not None:
-            df_mean_metric = mean_metric_df[task]['skill'].apply(lambda x: x*100) if 'skill' in metric else mean_metric_df[task][metric]
-            mean_metric = '' if model_name =='gt' else round(df_mean_metric[model_name].mean(), 2) #
+            if 'skill' in metric:
+                df_mean_metric = mean_metric_df[task]['skill'].apply(lambda x: x*100)
+                mean_metric = round(df_mean_metric[model_name].mean(), 2) #
+            elif 'lat_lon_error' in metric and model_names.sort() in [["deb_cfsv2", "abc_cfsv2"].sort(),  ["deb_ecmwf", "abc_ecmwf"].sort()]:
+                #could we see the mean absolute biases 
+                #(i.e., take the absolute value of each grid point’s bias and then take the mean) 
+                #and the mean squared biases?
+                df_mean_metric_mab = mean_metric_df[task][metric].apply(lambda x: abs(x))
+                df_mean_metric_msb = mean_metric_df[task][metric].apply(lambda x: pow(x,2))
+                mean_metric = f"mab: {round(df_mean_metric_mab[model_name].mean(), 2)}\nmsb: {round(df_mean_metric_msb[model_name].mean(), 2)}" #
+            else:
+                df_mean_metric = mean_metric_df[task][metric]
+                mean_metric = '' if model_name =='gt' else round(df_mean_metric[model_name].mean(), 2) #
         elif metric == 'lat_lon_anom' and 'lat_lon_skill' in metric_dfs[task].keys():
             df_mean_metric = metric_dfs[task]['lat_lon_skill'].apply(lambda x: x*100)
+            
             df_mean_metric, model_names = format_df_models(df_mean_metric, model_names)
+            
             mean_metric = int(df_mean_metric[model_name].mean())#round(df_mean_metric[model_name].mean(), 2)
         else:
             df_mean_metric = df_models
@@ -632,9 +780,19 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
                     
                 cb.ax.set_xlabel(cbar_title, fontsize=params['fontsize_title'], weight='bold')
                 if "linear" in scale_type:
-                    cb_skip = color_dic[(metric, gt_var, horizon)]['cb_skip']   
-                    cb_ticklabels = [f'{tick}' for tick in range(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip)]
-                    cb.set_ticks(range(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip))
+                    cb_skip = color_dic[(metric, gt_var, horizon)]['cb_skip'] if CB_skip is None else CB_skip
+                    if metric in ['lat_lon_rpss', 'lat_lon_crps']:
+                        cb_range = np.linspace(colorbar_min_value,colorbar_max_value,int(1+(colorbar_max_value-colorbar_min_value)/cb_skip))
+                        cb_ticklabels = [f'{round(tick,1)}' for tick in cb_range]
+                    elif metric in ["lat_lon_skill", "skill"]:
+                        cb_range = range(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip)
+#                         cb_ticklabels = [r'$\leq$'+f'{cb_range[0]}'] + [f'{tick}' for tick in cb_range[1:]]
+                        cb_ticklabels = [f'{tick}' for tick in cb_range]
+                        cb_ticklabels[0] = u'≤0'
+                    else:
+                        cb_range = range(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip)
+                        cb_ticklabels = [f'{tick}' for tick in cb_range]
+                    cb.set_ticks(cb_range)
                     cb.ax.set_xticklabels(cb_ticklabels, fontsize=params['fontsize_title'], weight='bold')       
         #Set the extent (x0, x1, y0, y1) of the map in the given coordinate system.
         if (target_dates.startswith('cold')or target_dates.startswith('heat') or target_dates.startswith('hurricane') or target_dates.startswith('2'))and zoom:
@@ -661,13 +819,17 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
             target_dates_str = f"Hurricane Michael, {target_dates_str}"
         elif target_dates.startswith('202108') or target_dates.startswith('202109'):
             target_dates_str = f"Hurricane Ida, {target_dates_str}"
-        elif target_dates.startswith('202012'):
-            target_dates_str = f"Atmospheric river - West Coast, {target_dates_str}"
+#         elif target_dates.startswith('202012'):
+#             target_dates_str = f"Atmospheric river - West Coast, {target_dates_str}"
         else:
             target_dates_str = f"{target_dates_str}"
-        fig.suptitle(f"{fig_title}\n{target_dates_str}", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
+        fig.suptitle(f"{fig_title} {target_dates_str}", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
     else:
-        #set figure superior title
+#         #set figure superior title
+#         if 'lat_lon_error' in metric and model_names.sort() in [["deb_cfsv2", "abc_cfsv2"].sort(),  ["deb_ecmwf", "abc_ecmwf"].sort()]:
+#             fig.suptitle(f"{fig_title}\n", fontsize=params['y_sup_fontsize'], y=params['y_sup_title']+0.05)
+#         else:
+#             fig.suptitle(f"{fig_title}\n", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
         fig.suptitle(f"{fig_title}\n", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
         
     #Save figure
