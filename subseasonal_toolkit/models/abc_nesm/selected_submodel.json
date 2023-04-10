@@ -1,21 +1,20 @@
 {
     "us_tmp2m_1.5x1.5_12w": {
-        "model_names": "tuned_nesmpp,perpp_nesm"
+        "forecast": "nesm"
     },
     "us_tmp2m_1.5x1.5_34w": {
-        "model_names": "tuned_nesmpp,tuned_climpp,perpp_nesm"
+        "forecast": "nesm"
     },
     "us_tmp2m_1.5x1.5_56w": {
-        "model_names": "tuned_nesmpp,tuned_climpp,perpp_nesm"
+        "forecast": "nesm"
     },
     "us_precip_1.5x1.5_12w": {
-        "model_names": "tuned_nesmpp,perpp_nesm"
+        "forecast": "nesm"
     },
     "us_precip_1.5x1.5_34w": {
-        "model_names": "tuned_nesmpp,tuned_climpp,perpp_nesm"
+        "forecast": "nesm"
     },
     "us_precip_1.5x1.5_56w": {
-        "model_names": "tuned_nesmpp,tuned_climpp,perpp_nesm"
+        "forecast": "nesm"
     }
 }
-
