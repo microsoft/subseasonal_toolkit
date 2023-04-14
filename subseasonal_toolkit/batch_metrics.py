@@ -9,14 +9,14 @@
 #   python -m subseasonal_toolkit.batch_metrics contest_precip 56w -mn climpp -t std_paper -m rmse score skill lat_lon_rmse
 #
 # Positional args:
-#   gt_id: contest_tmp2m, contest_precip, us_tmp2m, us_precip
-#   horizon: 34w or 56w
+#   gt_id: e.g., contest_tmp2m, contest_precip, us_tmp2m, us_precip
+#   horizon: e.g., 12w, 34w, or 56w
 #
 # Named args:
 #   --target_dates (-t): target dates for batch prediction (e.g.,
 #     'std_val','std_paper','std_ens') (default: 'std_paper')
-#   --metrics (-m): Space-separated list of error metrics to compute (valid choices are rmse, score, skill, lat_lon_rmse, lat_lon_skill, mse);
-#     computes rmse, score, and skill by default
+#   --metrics (-m): Space-separated list of error metrics to compute;
+#     computes rmse, score, skill, lat_lon_rmse, lat_lon_skill, lat_lon_error by default
 #   --model_name (-mn): name of model, e.g, climpp (default: None)
 #   --submodel_name (-sn):  name of submodel, e.g., spatiotemporal_mean-1981_2010
 #       (default: None)
@@ -42,7 +42,7 @@ parser = ArgumentParser()
 parser.add_argument("pos_vars", nargs="*")  # gt_id and horizon
 parser.add_argument('--target_dates', '-t', default='std_paper')
 # For metrics, 1 or more values expected => creates a list
-parser.add_argument("--metrics", '-m', nargs="+", type=str, default=['rmse', 'score', 'skill', 'lat_lon_rmse', 'lat_lon_skill'], help="Space-separated list of error metrics to compute (valid choices are rmse, score, skill, anom, error, lat_lon_rmse, lat_lon_skill, lat_lon_anom, lat_lon_pred, mse, wtd_mse)")
+parser.add_argument("--metrics", '-m', nargs="+", type=str, default=['rmse', 'score', 'skill', 'lat_lon_rmse', 'lat_lon_skill', 'lat_lon_error'], help="Space-separated list of error metrics to compute (valid choices are rmse, score, skill, anom, error, lat_lon_rmse, lat_lon_skill, lat_lon_anom, lat_lon_pred, lat_lon_error, mse, wtd_mse)")
 parser.add_argument('--model_name', '-mn', default=None)
 parser.add_argument('--submodel_name', '-sn', default=None)
 args = parser.parse_args()
@@ -174,7 +174,7 @@ for file_path, target_date_obj in zip(file_paths, target_date_objs):
             continue
         # Obtain a lock on the file to deal with multiple process file access
         with FileLock(file_path+"lock"):
-             preds = pd.read_hdf(file_path)
+            preds = pd.read_hdf(file_path)
         subprocess.call(f"rm {file_path}lock", shell=True)
     
     if len(preds) == 0:
