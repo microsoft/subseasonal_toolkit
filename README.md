@@ -17,13 +17,13 @@ Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Judah Cohen, Miruna O
 
 and the machine learning models and meteorological baselines of
 
-[Learned Benchmarks for Subseasonal Forecasting](https://arxiv.org/pdf/2109.10399.pdf)  
+[SubseasonalClimateUSA: A Dataset for Subseasonal Forecasting and Benchmarking](https://arxiv.org/pdf/2109.10399.pdf)  
 Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Miruna Oprescu, Judah Cohen, Franklyn Wang, Sean Knight, Maria Geogdzhayeva, Sam Levang, Ernest Fraenkel, and Lester Mackey.  Sep. 2021.
 
 ```
 @article{
   mouatadid2021toolkit,
-  title={Learned Benchmarks for Subseasonal Forecasting},
+  title={SubseasonalClimateUSA: A Dataset for Subseasonal Forecasting and Benchmarking},
   author={Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Miruna Oprescu, Judah Cohen, Franklyn Wang, Sean Knight, Maria Geogdzhayeva, Sam Levang, Ernest Fraenkel, and Lester Mackey},
   journal={arXiv preprint arXiv:2109.10399},
   year={2021}
@@ -58,25 +58,70 @@ A complete list of Python dependencies can be found in `setup.cfg`; these depend
 
 ## Generating Model Forecasts
 
-The following examples demonstrate how to generate contiguous US forecasts for the target dates evaluated in "Adaptive Bias Correction for Subseasonal Forecasting" or "Learned Benchmarks for Subseasonal Forecasting" using each implemented model.
+The following examples demonstrate how to generate contiguous US forecasts for the target dates evaluated in "Adaptive Bias Correction for Subseasonal Forecasting" or "SubseasonalClimateUSA: A Dataset for Subseasonal Forecasting and Benchmarking" using each implemented model.
 
 - ABC-CCSM4:
+  - Generate predictions for each Climatology++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp`
+  - Generate predictions for each CCSM4++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m ccsm4pp`
+  - Run ABC
   `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -a -m ccsm4`
 - ABC-CFSv2:
+  - Generate predictions for each Climatology++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp`
+  - Generate predictions for each CFSv2++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m cfsv2pp`
+  - Run ABC
   `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -a -m cfsv2`
 - ABC-ECMWF:
+  - Generate predictions for each Climatology++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp`
+  - Generate predictions for each ECMWF++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m ecmwfpp`
+  - Run ABC
   `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -a -m ecmwf`
 - ABC-FIMr1p1:
-  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -a -m fimr1p1pp`
+  - Generate predictions for each Climatology++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp`
+  - Generate predictions for each FIMr1p1++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m fimr1p1pp`
+  - Run ABC
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -a -m fimr1p1`
 - ABC-GEFS:
+  - Generate predictions for each Climatology++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp`
+  - Generate predictions for each GEFS++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m gefspp`
+  - Run ABC
   `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -a -m gefs`
 - ABC-GEMS:
+  - Generate predictions for each Climatology++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp`
+  - Generate predictions for each GEMS++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m gemspp`
+  - Run ABC
   `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -a -m gems`
 - ABC-GEOS_v2p1:
+  - Generate predictions for each Climatology++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp`
+  - Generate predictions for each GEOS_v2p1++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m geos_v2p1pp`
+  - Run ABC
   `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -a -m geos_v2p1`
 - ABC-NESM:
+  - Generate predictions for each Climatology++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp`
+  - Generate predictions for each NESM++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m nesmpp`
+  - Run ABC
   `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -a -m nesm`
 - ABC-SubX:
+  - Generate predictions for each Climatology++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp`
+  - Generate predictions for each SubX++ model configuration
+  `python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m subx_meanpp`
+  - Run ABC
   `python -m subseasonal_toolkit.generate_predictions -t std_paper_forecast -e -u -a -m subx_mean`
 - AutoKNN:
   `python -m subseasonal_toolkit.generate_predictions -t std_paper -u -m autoknn`

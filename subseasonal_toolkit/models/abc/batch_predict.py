@@ -12,6 +12,15 @@
 #   --forecast (-f): include the forecasts of this dynamical model as features;
 #     examples: "cfsv2" or "ecmwf" for standard models, "ecmwf:c" or "ecmwf:p1"
 #     for ECMWF control or single perturbation submodels (default: "cfsv2")
+#
+# Side effects:
+#   This script will call batch_predict and batch_metrics for any ABC ensemble member 
+#   (perpp, tuned_climpp, or tuned_{forecast}pp) that is missing RMSE metrics for the 
+#   given target_dates. However, it does not call bulk_batch_predict for climpp or
+#   {forecast}pp, so please ensure that all submodels have been generated for climpp
+#   {forecast}pp prior to calling this script, for example, by using the commands:  
+#   python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m climpp
+#   python -m subseasonal_toolkit.generate_predictions -t std_paper_eval -e -u -b -m ecmwfpp
 
 import os
 from subseasonal_toolkit.utils.notebook_util import call_notebook
