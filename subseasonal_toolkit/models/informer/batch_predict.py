@@ -1,4 +1,4 @@
-# Predict most recent observation
+# Generate forecasts using Informer model
 #
 # Example usage:
 #   python src/models/persistence/batch_predict.py contest_tmp2m 34w -t std_val
