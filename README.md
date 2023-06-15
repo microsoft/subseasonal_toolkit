@@ -6,7 +6,7 @@ The `subseasonal_toolkit` package provides implementations of the subseasonal fo
 Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Judah Cohen, Miruna Oprescu, Ernest Fraenkel, and Lester Mackey.  June 2023.
 
 ```
-@article{mouatadid2022adaptive,
+@article{mouatadid2023adaptive,
 	author = {Mouatadid, Soukayna and Orenstein, Paulo and Flaspohler, Genevieve and Cohen, Judah and Oprescu, Miruna and Fraenkel, Ernest and Mackey, Lester},
 	journal = {Nature Communications},
 	number = {1},
