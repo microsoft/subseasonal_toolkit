@@ -51,14 +51,14 @@ from mpl_toolkits.basemap import Basemap
 
 # Ensure notebook is being run from base repository directory
 try:
-    os.chdir("/home/{}/forecast_rodeo_ii/".format(os.environ["USER"]))
+    os.chdir(os.path.join("..", "..", "..","..", "forecast_rodeo_ii"))
 except Exception as err:
     print(f"Warning: unable to change directory; {repr(err)}")
 
 #
 # Directory for saving output
 #
-out_dir = "/home/{}/forecast_rodeo_ii/subseasonal_toolkit/viz/abc/figures".format(os.environ["USER"])
+out_dir = os.path.join("forecast_rodeo_ii", "subseasonal_toolkit", "viz", "abc", "figures")
 make_directories(out_dir)
 source_data_dir = os.path.join(out_dir, "source_data")
 make_directories(source_data_dir)
@@ -76,41 +76,18 @@ plt.rcParams.update({'font.size': 86,
 all_model_names = {
     "tuned_climpp" : "Climatology++", 
     "tuned_cfsv2pp" : "CFSv2++", 
-    "tuned_localboosting" : "LocalBoosting", 
-    "tuned_salient2" : "Salient 2.0", 
-    "salient": "Salient",
     "persistence" : "Persistence", 
     "perpp" : "Persistence++", 
     "perpp_ecmwf" : "Persistence++", 
     "perpp_cfsv2" : "Persistence++", 
-    "multillr" : "MultiLLR", 
-    "autoknn" : "AutoKNN",
     "climatology" : "Climatology", 
     "raw_cfsv2" : "CFSv2", 
-    "deb_cfsv2" : "Debiased CFSv2", 
-    "nbeats" : "N-Beats", 
-    "prophet" : "Prophet",
-    "informer" : "Informer",
-    "Climatology" : "Contest Climatology",
-    "online_learning" : "ABC online",
-    "online_learning-ah_rpNone_R1_recent_g_SC_LtCtD": "Online Toolkit",
-    "online_learning-ah_rpNone_R1_recent_g_SC_AMLPtCtDtKtS": "Online Toolkit + Learning",
-    "online_learning-ah_rpNone_R1_recent_g_SP_LtCtD": "Online Toolkit",
-    "online_learning-ah_rpNone_R1_recent_g_SP_AMLPtCtDtKtS": "Online Toolkit + Learning",
-    "online_learning-ah_rpNone_R1_recent_g_std_ecmwf_LtCtD": "Online Toolkit",
-    "online_learning-ah_rpNone_R1_recent_g_std_ecmwf_AMLPtCtDtKtS": "Online Toolkit + Learning",
-    "linear_ensemble": "ABC linear",
-    'linear_ensemble_localFalse_dynamicFalse_stepFalse_LtCtD': "Uniform Toolkit",
-    'linear_ensemble_localFalse_dynamicFalse_stepFalse_AMLPtCtDtKtS': "Uniform Toolkit + Learning",      
+    "deb_cfsv2" : "Debiased CFSv2",    
     "gt": "Observed",
     "raw_ecmwf": "ECMWF",
     "deb_ecmwf": "Debiased ECMWF",
     "tuned_ecmwfpp": "ECMWF++",
     "ecmwf": "ECMWF",
-    "ecmwf-years20_leads15-15_lossmse_forecastc_debiasp+c": "Debiased Control 34w",
-    "ecmwf-years20_leads15-15_lossmse_forecastp_debiasp+c": "Debiased Ensemble 34w",   
-    "ecmwf-years20_leads29-29_lossmse_forecastc_debiasp+c": "Debiased Control 56w",
-    "ecmwf-years20_leads29-29_lossmse_forecastp_debiasp+c": "Debiased Ensemble 56w",   
     "raw_ccsm4": "CCSM4",
     "raw_geos_v2p1": "GEOS_V2p1",
     "raw_nesm": "NESM",
@@ -168,26 +145,23 @@ def get_metrics_df(gt_id= "contest_precip",
     task = f"{gt_id}_{horizon}"
 
     # Create metric filename template
-    in_file = Template("eval/metrics/$model/submodel_forecasts/$sn/$task/$metric-$task-$target_dates.h5")
+    in_file = Template(os.path.join("eval","metrics", "$model", "submodel_forecasts", "$sn", "$task", "$metric-$task-$target_dates.h5"))
 
     # Create metrics dataframe template
     metrics_df = pd.DataFrame(get_target_dates(target_dates, horizon=horizon), columns=["start_date"])
     
     list_model_names = [x for x in os.listdir('models')]
-    list_submodel_names = [os.path.basename(os.path.normpath(x)) for x in glob('models/*/submodel_forecasts/*')]
+    list_submodel_names = [os.path.basename(os.path.normpath(x)) for x in glob(os.path.join("models", "*", "submodel_forecasts", "*"))]
 
     
     for i, model_name in enumerate(model_names):
-#         print(model_name)
 
         if model_name in list_model_names:
             # Get the selected submodel name
             sn = get_selected_submodel_name(model=model_name, gt_id=gt_id, horizon=horizon, target_dates=target_dates)
-            #print(f'{model_name}: {sn}')
             # Form the metric filename
             filename = in_file.substitute(model=model_name, sn=sn, task=task, metric=metric, target_dates=target_dates)
             # Load metric dataframe
-#             print(filename)
             try:
                 model_df = pd.read_hdf(filename).rename({metric: model_name}, axis=1)
                 metrics_df = pd.merge(metrics_df, model_df, on=["start_date"], how="left")
@@ -204,10 +178,8 @@ def get_metrics_df(gt_id= "contest_precip",
                 sn = model_name
             else:
                 sn = model_name
-            #print(f'{model_name}: {sn}')
             # Form the metric filename
-            
-            filename_model_name_path = glob(f'models/*/submodel_forecasts/{sn}')[0]
+            filename_model_name_path = glob(os.path.join("models", "*", "submodel_forecasts", sn))[0]
             filename_model_name = os.path.basename(os.path.normpath(Path(filename_model_name_path).resolve().parents[1]))
             filename = in_file.substitute(model=filename_model_name, sn=sn, task=task, metric=metric, target_dates=target_dates)
             printf(filename)
@@ -273,12 +245,11 @@ def get_models_metric_lat_lon(gt_id='us_precip', horizon='56w', target_dates='st
                                                   'abc_fimr1p1', 'abc_gefs', 'abc_gem']:
                 continue
             submodel_name = model_name if model_name=='gt' else get_selected_submodel_name(model=model_name, gt_id=gt_id, horizon=horizon)
-            filename = f"eval/metrics/{model_name}/submodel_forecasts/{submodel_name}/{task}/{metric}-{task}-{target_dates}.h5"
+            filename = os.path.join("eval", "metrics", model_name, "submodel_forecasts", submodel_name, task, f"{metric}-{task}-{target_dates}.h5")
             if os.path.isfile(filename):
                 printf(f"Processing {model_name}")
                 df = pd.read_hdf(filename).rename(columns={metric:model_name})
                 df = df.set_index(['lat','lon']) if 'lat_lon' in metric else df.set_index(['start_date'])
-#                 print(df)
                 if i==0:
                     metric_dfs[metric] = df
                 else:
@@ -313,9 +284,7 @@ def format_df_models(df_models, model_names):
    
     missing_models = [m for m in model_names if m not in df_models.columns]
     model_names = [m for m in model_names if m not in missing_models]
-    #print(model_names)
-    
-    #print(df_models)
+
     df_models = df_models.reset_index()
     if 'lat' not in df_models.columns and 'lon' not in df_models.columns:
         df_models[['lat', 'lon']] = pd.DataFrame(df_models['level_1'].tolist())
@@ -323,7 +292,6 @@ def format_df_models(df_models, model_names):
         df_models.drop(columns=['level_1'], inplace=True)
         
     #Convert longitude and delete duplicate lat, lon columns              
-     
     df_models = df_models.loc[:,~df_models.columns.duplicated()]
     
     #sort model names list
@@ -412,7 +380,7 @@ def get_plot_params_vertical(subplots_num=1):
     return plot_params
 
 
-color_map_str = 'PiYG'#'jet'
+color_map_str = 'PiYG'
 color_map_str_anom = 'bwr'
 cmap_name = 'cb_friendly'
 cb_skip = 5
@@ -616,18 +584,15 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
     #Make figure with compared models plots
     tasks = [f"{t[0]}_{t[1]}" for t in product(gt_ids, horizons)]
     subplots_num = len(model_names) * len(tasks)
-#     printf(subplots_num)
     if ('error' in metric) or (feature is not None):
         params =  get_plot_params_horizontal(subplots_num=subplots_num)
     else:
         params =  get_plot_params_vertical(subplots_num=subplots_num)
     nrows, ncols = params['nrows'], params['ncols']
-#     printf(f"subplots_num {subplots_num}, nrows {nrows}, ncols {ncols}")
-    
-    #print(f'{period_group}')
+
     #Set properties common to all subplots
     fig = plt.figure(figsize=(nrows*params['figsize_x'], ncols*params['figsize_y']))
-    gs = GridSpec(nrows=nrows-1, ncols=ncols, width_ratios=params['width_ratios']) #, wspace=0.15, hspace=0.15)#, bottom=0.5)
+    gs = GridSpec(nrows=nrows-1, ncols=ncols, width_ratios=params['width_ratios']) 
 
     # Create latitude, longitude list, model data is not yet used
     df_models = metric_dfs[tasks[0]][metric]
@@ -684,7 +649,7 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
 
         # Set color parameters
         gt_id, horizon = task[:-4], task[-3:]
-        gt_var = "tmp2m" if "tmp2m" in gt_id else "precip" #gt_id.split("_")[-1]
+        gt_var = "tmp2m" if "tmp2m" in gt_id else "precip" 
         if CB_minmax == []:
             colorbar_min_value = color_dic[(metric, gt_var, horizon)]['colorbar_min_value'] 
             colorbar_max_value = color_dic[(metric, gt_var, horizon)]['colorbar_max_value'] 
@@ -715,20 +680,20 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
         if mean_metric_df is not None:
             if 'skill' in metric:
                 df_mean_metric = mean_metric_df[task]['skill'].apply(lambda x: x*100)
-                mean_metric = round(df_mean_metric[model_name].mean(), 2) #
+                mean_metric = round(df_mean_metric[model_name].mean(), 2)
             elif 'lat_lon_anom' in metric:
                 df_mean_metric = mean_metric_df
-                mean_metric = '' if model_name =='gt' else int(df_mean_metric[model_name].mean()) #
+                mean_metric = '' if model_name =='gt' else int(df_mean_metric[model_name].mean()) 
             else:
                 df_mean_metric = mean_metric_df[task][metric]
-                mean_metric = '' if model_name =='gt' else round(df_mean_metric[model_name].mean(), 2) #
+                mean_metric = '' if model_name =='gt' else round(df_mean_metric[model_name].mean(), 2) 
         elif metric == 'lat_lon_anom' and 'lat_lon_skill' in metric_dfs[task].keys():
             df_mean_metric = metric_dfs[task]['lat_lon_skill'].apply(lambda x: x*100)
             df_mean_metric, model_names = format_df_models(df_mean_metric, model_names)
             mean_metric = int(df_mean_metric[model_name].mean())
         else:
             df_mean_metric = df_models
-            mean_metric = '' #int(df_mean_metric[model_name].mean()) 
+            mean_metric = ''  
       
     
         # SET SUBPLOT TITLES******************************************************************************************
@@ -824,9 +789,7 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
         out_file = os.path.join(out_dir_fig, f"{metric}_{target_dates}_{gt_id}_n{subplots_num}_{model_names_str}.pdf") 
     make_directories(out_dir_fig)
     fig.savefig(out_file, orientation = 'landscape', bbox_inches='tight')
-#     plt.savefig(out_file.replace('.pdf','.png'), orientation = 'landscape', bbox_inches='tight')
     subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     print(f"\nFigure saved: {out_file}\n")
     
         
@@ -847,7 +810,6 @@ def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, tar
         fig.clear()
         plt.close(fig)  
         
-#     return fig
 
 
 def get_feature_name(feature):
@@ -863,7 +825,7 @@ def barplot_rawabc(model_names, gt_id, horizon, metric, target_dates,
     sns.set_theme(style="whitegrid")
     sns.set_palette("Paired")
     sns.set(font_scale = 1.5, rc={'font.weight': 'bold', 'figure.facecolor':'white', "lines.linewidth": 0.75})
-    sns.set_style("whitegrid")#, {'legend.frameon':True})
+    sns.set_style("whitegrid")
     
     target_dates_objs = get_target_dates(target_dates)
     target_dates_start = datetime.strftime(target_dates_objs[0], '%Y-%m-%d')
@@ -882,7 +844,6 @@ def barplot_rawabc(model_names, gt_id, horizon, metric, target_dates,
         model_names = [m for m in model_names if m not in figure_models_missing56w]
     df_barplot = pd.DataFrame(columns=['start_date', metric, 'debias_method', 'model'])
     for i, m in enumerate(model_names):
-    #     print(m)
         sn = get_selected_submodel_name(m, gt_id, horizon)
         f = os.path.join('eval', 'metrics', m, 'submodel_forecasts', sn, task, f'{metric}-{task}-{target_dates}.h5')
         if os.path.isfile(f):
@@ -892,7 +853,7 @@ def barplot_rawabc(model_names, gt_id, horizon, metric, target_dates,
             df_barplot = df_barplot.append(df)
         else:
             printf(f"Metrics file missing for {metric} {m} {task}")
-#     display(df_barplot)
+
     #Save Figure source data  
     if source_data:
         fig_filename = os.path.join(source_data_dir, source_data_filename)
@@ -903,14 +864,14 @@ def barplot_rawabc(model_names, gt_id, horizon, metric, target_dates,
             with pd.ExcelWriter(fig_filename, engine="openpyxl") as writer:  
                 df_barplot.to_excel(writer, sheet_name=task, na_rep="NaN") 
         printf(f"Source data saved: {fig_filename}")
-                                    
+
     ax = sns.barplot(x="model", y=metric, hue="debias_method", data=df_barplot, ci=95, capsize=0.1, palette={
     'Dynamical': 'red',
     'ABC': 'skyblue'
 })
     fig_title = f"{task.replace('_','').replace('precip',' Precipitation').replace('tmp2m',' Temperature').replace('us','U.S.')}"
     fig_title = fig_title.replace('56w', ', weeks 5-6').replace('34w', ', weeks 3-4').replace('12w', ', weeks 1-2').replace('1.5x1.5', '')
-    fig_title = f"{fig_title}\n"#{target_dates_str}: {target_dates_start} to {target_dates_end}"
+    fig_title = f"{fig_title}\n"
     ax.set_title(fig_title, weight='bold')
     if '56w' in horizon:
         ax.set_xticklabels(ax.get_xticklabels(), fontdict={'size': 16}, rotation = 90)
@@ -922,11 +883,11 @@ def barplot_rawabc(model_names, gt_id, horizon, metric, target_dates,
     ax.legend(handles=handles[0:], labels=labels[0:], frameon=True, edgecolor='white', framealpha=1)
     if target_dates.startswith('std_'):
         if 'precip' in gt_id and '12' not in horizon:
-            ax. set(ylim=(-0.025, 0.3))
+            ax.set(ylim=(-0.025, 0.3))
         elif 'precip' in gt_id and '12' in horizon:
-            ax. set(ylim=(-0.025, 0.65))
+            ax.set(ylim=(-0.025, 0.65))
         elif 'tmp2m' in gt_id and '12' not in horizon:
-            ax. set(ylim=(-0.03, 0.5))
+            ax.set(ylim=(-0.03, 0.5))
         elif 'tmp2m' in gt_id and '12' in horizon:
             ax. set(ylim=(-0.03, 0.9))
     fig = ax.get_figure()
@@ -935,11 +896,99 @@ def barplot_rawabc(model_names, gt_id, horizon, metric, target_dates,
     out_file = os.path.join(out_dir_fig, f"barplot_{metric}_raw_vs_abc_{task}_{target_dates}.pdf")
     fig.savefig(out_file, bbox_inches='tight') 
     subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     print(f"\nFigure saved: {out_file}\n")
-    if show is False:
+    if show:
+        plt.show()
+    else:
+        fig.clear()
+        plt.close(fig) 
+    return df_barplot
+                                          
+def barplot_skillthreshold(model_names, gt_id, horizon, metric, target_dates, 
+                   source_data=False,
+                   source_data_filename = "fig_3-fraction_above_skill_threshold.xlsx",
+                   show=True): 
+    sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 0.5})
+    sns.set_theme(style="whitegrid")
+    sns.set_palette("Paired")
+    sns.set(font_scale = 1.5, rc={'font.weight': 'bold', 'figure.facecolor':'white', "lines.linewidth": 0.75})
+    sns.set_style("whitegrid")
+    
+    target_dates_objs = get_target_dates(target_dates)
+    target_dates_start = datetime.strftime(target_dates_objs[0], '%Y-%m-%d')
+    target_dates_end = datetime.strftime(target_dates_objs[-1], '%Y-%m-%d')
+    target_dates_str = target_dates.replace('cold_','Cold wave, ').replace('texas','Texas').replace('gl','Great Lakes').replace('ne','New England')
+    
+    task = f'{gt_id}_{horizon}'
+    df_barplot = pd.DataFrame(columns=["model", "skill threshold", "fraction_above"])
+    thresholds = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6] 
+    for i, m in enumerate(model_names):
+        model_name_root = '_'.join(m.split('_')[1:])
+        sn = get_selected_submodel_name(m, gt_id, horizon)
+        f = os.path.join('eval', 'metrics', m, 'submodel_forecasts', sn, task, f'{metric}-{task}-{target_dates}.h5')
+        if os.path.isfile(f):
+            df = pd.read_hdf(f)
+            df = df[df[metric].notna()]  
+            model_name = all_model_names[m]
+            df_i = pd.DataFrame(columns=["model", "skill threshold", "fraction_above"])
+            df_i['skill threshold'] = thresholds
+            df_i['model'] = model_name
+            df_i.set_index(['model', 'skill threshold'], inplace=True)
+            for threshold in thresholds:
+                fraction_above = list(df[metric].agg([lambda x: ((x >= threshold)*1)]).sum()/len(df))[0]
+                df_i.loc[(model_name, threshold)]['fraction_above'] = fraction_above                                      
+            df_barplot = df_barplot.append(df_i.reset_index())
+        else:
+            printf(f"Metrics file missing for {metric} {m} {task}")
+    df_barplot.reset_index(inplace=True, drop=True)  
+    
+    #Save Figure source data  
+    if source_data:
+        fig_filename = os.path.join(source_data_dir, source_data_filename)
+        if os.path.isfile(fig_filename):
+            with pd.ExcelWriter(fig_filename, engine="openpyxl", mode='a') as writer:  
+                df_barplot.to_excel(writer, sheet_name=task, na_rep="NaN") 
+        else:
+            with pd.ExcelWriter(fig_filename, engine="openpyxl") as writer:  
+                df_barplot.to_excel(writer, sheet_name=task, na_rep="NaN") 
+        printf(f"Source data saved: {fig_filename}")
+    ax = sns.barplot(x="skill threshold", y='fraction_above', hue="model", data=df_barplot,
+                     palette={all_model_names[f'raw_{model_name_root}']: 'red',
+                        all_model_names[f'deb_{model_name_root}']: 'gold',
+                        all_model_names[f'abc_{model_name_root}']: 'skyblue'
+                        })
+    fig_title = f"{task.replace('_','').replace('precip',' Precipitation').replace('tmp2m',' Temperature').replace('us','U.S.')}"
+    fig_title = fig_title.replace('56w', ', weeks 5-6').replace('34w', ', weeks 3-4').replace('12w', ', weeks 1-2').replace('1.5x1.5', '')
+    fig_title = f"{fig_title}\n"
+    ax.set_title(fig_title, fontdict={'weight': 'bold','size': 22})
+    ax.set_xticklabels(ax.get_xticklabels(), fontdict={'size': 22}, rotation = 90)
+    ax.set_yticklabels([round(i,1) for i in ax.get_yticks()], fontdict={'size': 22})
+    ax.set_xlabel('\nSkill threshold', fontdict={'weight': 'bold','size': 22})
+    ylabel_str = 'grid points' if metric.startswith('lat_lon') else 'target dates'
+    ax.set_ylabel(f'Fraction of {ylabel_str} above\nskill threshold\n', fontdict={'weight': 'bold','size': 22})
+    ax.set(ylim=(0, 1.1))
+    if 'ecmwf' in m:
+        ax.set(ylabel=None)
+    elif 'subx' in m and '56w' in horizon:
+        ax.set(ylabel=None)
+                                          
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles=handles, labels=labels)
+
+    fig = ax.get_figure()
+    out_dir_fig = os.path.join(out_dir, "barplots")
+    make_directories(out_dir_fig)
+    model_names_str = '-'.join(model_names)
+    out_file = os.path.join(out_dir_fig, f"barplot_fraction_above_{metric}_{target_dates}_{gt_id}_{horizon}_{model_names_str}.pdf")
+    fig.savefig(out_file, bbox_inches='tight') 
+    subprocess.call("chmod a+w "+out_file, shell=True)
+    print(f"\nFigure saved: {out_file}\n")
+    if show:
+        plt.show()
+    else:
         fig.clear()
         plt.close(fig)  
+    return df_barplot
 
 # Cohort Shapley utils
 # Load continuous features
@@ -1053,8 +1102,6 @@ def get_impact_levels_errors(feature, cis, num_bins):
         ci_center, ci_halflen = (ci[0]+ci[1])/2, (ci[1]-ci[0])/2
         ci_centers += [round(ci_center,2)]
         ci_halflens += [round(ci_halflen,2)]
-#         printf(f"Decile {bin_num+1}: Probability of positive impact {ci_center:.2g}" 
-#                          " +/- " f"{ci_halflen:.2g}")
     return ci_centers, ci_halflens
 
 def get_high_impact_bins(feature, cis, num_bins):
@@ -1101,7 +1148,8 @@ def plot_lat_lon_mat_all(df_cs,
                      target_dates="std_paper_forecast",
                      source_data=True,
                      source_data_filename= "fig_4-impact_hgt_500_pc1.xlsx",
-                     show=True):                 
+                     show=True): 
+    """Plots the bins with impact probability estimates"""
     task = f"{gt_id}_{horizon}"
     task_long = task.replace('us_precip_1.5x1.5_','precipitation').replace('us_tmp2m_1.5x1.5_','temperature').replace('34w', ', weeks 3-4').replace('56w','weeks 5-6')
                                           
@@ -1130,15 +1178,13 @@ def plot_lat_lon_mat_all(df_cs,
 
     # Average visualization variable by bin / quantile
     viz_df = viz_df.groupby(X_q[feature]).mean()
-    #     display(viz_df)
 
     subplots_num = viz_df.shape[0]
     params =  get_plot_params_vertical(subplots_num=subplots_num)
     nrows, ncols = params['nrows'], params['ncols']
 
     fig = plt.figure(figsize=(nrows*params['figsize_x'], ncols*params['figsize_y']))
-    gs = GridSpec(nrows=nrows-1, ncols=ncols, width_ratios=params['width_ratios']) #, wspace=0.15, hspace=0.15)#, bottom=0.5)
-    
+    gs = GridSpec(nrows=nrows-1, ncols=ncols, width_ratios=params['width_ratios']) 
     impact_levels, errors = get_impact_levels_errors(feature, cis, num_bins)
     impact_min, impact_max = min(impact_levels), max(impact_levels)
     errors_min, errors_max = errors[impact_levels.index(impact_min)], errors[impact_levels.index(impact_max)]
@@ -1188,7 +1234,6 @@ def plot_lat_lon_mat_all(df_cs,
         lons_edges = np.asarray(list(np.arange(lons[0], lons[-1]+edge_len*2, edge_len))) - edge_len/2
         lat_grid, lon_grid = np.meshgrid(lats_edges,lons_edges)
 
-#         if feature.startswith("sst"):
         if 'sst' in viz_var:
             ax = fig.add_subplot(gs[x,y], projection=ccrs.PlateCarree(), aspect="auto")
         else:
@@ -1197,7 +1242,6 @@ def plot_lat_lon_mat_all(df_cs,
         ax.set_facecolor('w')
         ax.axis('off')
 
-#         ax.coastlines(linewidth=0.9, color='gray') 
         if 'sst' in viz_var:
             ax.coastlines(linewidth=0.9, color='gray') 
             land_110m = cfeature.NaturalEarthFeature('physical', 'land', '110m',
@@ -1214,26 +1258,22 @@ def plot_lat_lon_mat_all(df_cs,
             ['white','peachpuff','green','lightskyblue','dodgerblue','blue'] if 'icec' in viz_var
             else ['purple','blue','lightblue','white','pink','yellow','red'])
         if 'icec' in viz_var:
-            #CB_minmax = (0, 1) # raw icec
-            #cb_skip = 1 #color_dic[(metric, gt_var, horizon)]['cb_skip']
             max_val = 1/4
             CB_minmax = (-max_val, max_val)
             cb_skip = max_val
             CB_colors_customized=['blue','dodgerblue','lightskyblue','white','pink', 'red', 'darkred']
         elif 'sst' in viz_var:
             CB_minmax = (-2, 2)
-            cb_skip = 1 #color_dic[(metric, gt_var, horizon)]['cb_skip']   
+            cb_skip = 1   
             CB_colors_customized=['blue','dodgerblue','lightskyblue','white','pink', 'red', 'darkred']
         elif 'global' in viz_var:
-            CB_minmax = (-5, 5)#30)
-            cb_skip = 1#color_dic[(metric, gt_var, horizon)]['cb_skip']   
+            CB_minmax = (-5, 5)
+            cb_skip = 1  
             CB_colors_customized=['tan','violet','yellow','green','lightskyblue','dodgerblue','blue']
         elif 'hgt' in viz_var:
-            #CB_minmax = (29500, 31250) # raw hgt
-            #cb_skip = 500
             max_val = max(np.abs(viz_df.min().min()), viz_df.max().max())/1.25
             CB_minmax = (-max_val, max_val)
-            cb_skip = max_val #color_dic[(metric, gt_var, horizon)]['cb_skip']   
+            cb_skip = max_val  
             CB_colors_customized=['blue','dodgerblue','lightskyblue','white','pink', 'red', 'darkred']
         else:
             CB_minmax = []
@@ -1243,8 +1283,7 @@ def plot_lat_lon_mat_all(df_cs,
             colorbar_max_value = color_dic[(metric, gt_var, horizon)]['colorbar_max_value'] 
         else:
             colorbar_min_value = CB_minmax[0]
-            colorbar_max_value = CB_minmax[1]
-# 
+            colorbar_max_value = CB_minmax[1] 
         color_map_str = color_dic[(metric, gt_var, horizon)]['color_map_str'] 
 
 
@@ -1310,7 +1349,7 @@ def plot_lat_lon_mat_all(df_cs,
         
         #Add colorbar
         if CB_minmax != []:
-            if  (i == ncols):#subplots_num-1):
+            if  (i == ncols):
                 #Add colorbar for weeks 3-4 and 5-6
                 cb_ax_loc = [0.92, 0.1, 0.01, 0.8] if subplots_num == 10 else [0.2, 0.08, 0.6, 0.02]
                 cb_ax = fig.add_axes(cb_ax_loc) 
@@ -1320,7 +1359,7 @@ def plot_lat_lon_mat_all(df_cs,
                     cb = fig.colorbar(plot, cax=cb_ax, orientation='vertical')
                 cb.outline.set_edgecolor('black')
                 cb.ax.tick_params(labelsize=params['fontsize_ticks']) 
-                cbar_title = mean_viz_var_long[viz_var] #+ f' per decile' #'Skill (%)' if 'skill' in metric else metric
+                cbar_title = mean_viz_var_long[viz_var] 
                 if metric == 'lat_lon_error':
                     cbar_title = 'model bias (mm)' if 'precip' in gt_id else 'model bias ($^\degree$C)'
 
@@ -1354,15 +1393,12 @@ def plot_lat_lon_mat_all(df_cs,
         else:
             with pd.ExcelWriter(fig_filename, engine="openpyxl") as writer:  
                 viz_df.T.to_excel(writer, sheet_name=f"binfig_{task}", na_rep="NaN") 
-        printf(f"Source data saved: {fig_filename}")
-
-                         
+        printf(f"Source data saved: {fig_filename}")                        
     fig = ax.get_figure()
     if show is False:
         fig.clear()
         plt.close(fig)
-                         
-#     return fig
+
                          
 # Provide a description of the vizualization variable
 viz_var_long = {'wide_us_sst_anom': 'Lagged SST anomalies',
@@ -1372,14 +1408,10 @@ viz_var_long = {'wide_us_sst_anom': 'Lagged SST anomalies',
                }
 
 
-###TODO: add comment block
 def plot_metric_maps_date(metric_dfs,
                           dates_largest_impact,
                           df_cs,
                           X_q,
-#                           data_matrix,
-#                           viz_df,
-#                           viz_var,
                           model_names,
                           gt_ids,
                           horizons,
@@ -1394,6 +1426,7 @@ def plot_metric_maps_date(metric_dfs,
                           show=True,
                           source_data = False,
                           source_data_filename = "hgt_500_anom_2010_1_shift30"):
+    """Plot the skill for the date with the highest probability of positive impact"""
                          
     if feature.startswith("phase_shift"):
         display(Markdown(f'#### {feature} - {target_dates}:'))
@@ -1460,7 +1493,7 @@ def plot_metric_maps_date(metric_dfs,
 
         # Restrict to relevant dates
         target_date_obj = get_target_dates(target_dates,'%Y%m%d')[0]
-        target_date_ind = datetime.strftime(target_date_obj,'%Y-%m-%d')#'2019-04-09'
+        target_date_ind = datetime.strftime(target_date_obj,'%Y-%m-%d')
         data_matrix = viz_df.loc[target_date_ind].to_frame().T
         data_matrix.index.names = [feature]
 
@@ -1490,7 +1523,6 @@ def plot_metric_maps_date(metric_dfs,
         #Make figure with compared models plots
         tasks = [f"{t[0]}_{t[1]}" for t in product(gt_ids, horizons)]
         subplots_num = 1 + (len(model_names) * len(tasks))
-    #     params =  get_plot_params_vertical(subplots_num=subplots_num)
         params =  get_plot_params_horizontal(subplots_num=subplots_num)
         params['fontsize_title'] += 4
         params['fontsize_ticks'] += 4
@@ -1500,8 +1532,7 @@ def plot_metric_maps_date(metric_dfs,
 
         #Set properties common to all subplots
         fig = plt.figure(figsize=(nrows*params['figsize_x'], ncols*params['figsize_y']))
-        gs = GridSpec(nrows=nrows-1, ncols=ncols, width_ratios=params['width_ratios']) #, wspace=0.15, hspace=0.15)#, bottom=0.5)
-
+        gs = GridSpec(nrows=nrows-1, ncols=ncols, width_ratios=params['width_ratios']) 
 
 
     # SUBPLOT 1 *******************************************************************************************
@@ -1536,7 +1567,6 @@ def plot_metric_maps_date(metric_dfs,
             ax = fig.add_subplot(gs[x,y], projection=ccrs.PlateCarree(), aspect="auto")
         else:
             ax = fig.add_subplot(gs[x,y], aspect="auto")
-    #     ax = fig.add_subplot(gs[x,y], aspect="auto")
         ax.set_facecolor('w')
         ax.axis('off')
 
@@ -1545,7 +1575,7 @@ def plot_metric_maps_date(metric_dfs,
             ax.add_feature(cfeature.STATES.with_scale('110m'), edgecolor='gray', linewidth=0.9, linestyle=':')
             land_110m = cfeature.NaturalEarthFeature('physical', 'land', '110m',
                                             edgecolor='face',
-                                            facecolor='white')#cfeature.COLORS['land'])
+                                            facecolor='white')
 
             ax.add_feature(land_110m, edgecolor='gray')
 
@@ -1557,26 +1587,22 @@ def plot_metric_maps_date(metric_dfs,
             ['white','peachpuff','green','lightskyblue','dodgerblue','blue'] if 'icec' in viz_var
             else ['purple','blue','lightblue','white','pink','yellow','red'])
         if 'icec' in viz_var:
-            #CB_minmax = (0, 1) # raw icec
-            #cb_skip = 1 #color_dic[(metric, gt_var, horizon)]['cb_skip']
             max_val = 1/4
             CB_minmax = (-max_val, max_val)
             cb_skip = max_val
             CB_colors_customized=['blue','dodgerblue','lightskyblue','white','pink', 'red', 'darkred']
         elif 'sst' in viz_var:
             CB_minmax = (-2, 2)
-            cb_skip = 1 #color_dic[(metric, gt_var, horizon)]['cb_skip']   
+            cb_skip = 1 
             CB_colors_customized=['blue','dodgerblue','lightskyblue','white','pink', 'red', 'darkred']
         elif 'global' in viz_var:
-            CB_minmax = (-5, 5)#30)
-            cb_skip = 1#color_dic[(metric, gt_var, horizon)]['cb_skip']   
+            CB_minmax = (-5, 5)
+            cb_skip = 1  
             CB_colors_customized=['tan','violet','yellow','green','lightskyblue','dodgerblue','blue']
         elif 'hgt' in viz_var:
-            #CB_minmax = (29500, 31250) # raw hgt
-            #cb_skip = 500
             max_val = max(np.abs(viz_df.min().min()), viz_df.max().max())/1.25
             CB_minmax = (-max_val, max_val)
-            cb_skip = max_val #color_dic[(metric, gt_var, horizon)]['cb_skip']   
+            cb_skip = max_val   
             CB_colors_customized=['blue','dodgerblue','lightskyblue','white','pink', 'red', 'darkred']
         else:
             CB_minmax = []
@@ -1599,9 +1625,6 @@ def plot_metric_maps_date(metric_dfs,
                 #customized cmap
                 cmap = LinearSegmentedColormap.from_list(cmap_name, CB_colors_customized, N=100)
             color_map = matplotlib.cm.get_cmap(cmap) 
-    #         plot = ax.pcolormesh(lon_grid,lat_grid, np.transpose(data_matrix),
-    #                      vmin=colorbar_min_value, vmax=colorbar_max_value,
-    #                      cmap=color_map)
             if 'sst' in viz_var: 
                 plot = ax.pcolormesh(lon_grid,lat_grid, np.transpose(data_matrix), 
                                      vmin=colorbar_min_value, vmax=colorbar_max_value,
@@ -1630,19 +1653,6 @@ def plot_metric_maps_date(metric_dfs,
                                  norm=colors.SymLogNorm(vmin=colorbar_min_value, vmax=colorbar_max_value, linthresh=0.03, base=10))
 
         ax.tick_params(axis='both', labelsize=params['fontsize_ticks'])
-    #     feature_name = get_feature_name(feature)
-    #     if 'mei' in feature:
-    #         shift = int(str.split(str.split(feature,'_')[-1],'shift')[1])
-    #         feature_df = data_loaders.get_ground_truth(f'mei', shift=shift).set_index('start_date')
-    #         feature_mean = feature_df.loc[target_dates_str][feature]
-    #     else:
-    #         ###TODO: this shouldn't be the mean of the data matrix but rather the scalar value of the feature 
-    #         ###(e.g., the single eof value on this date)
-    #         feature_mean = str(round(data_matrix.mean().mean(),2))[:5]
-    #     ylabel = f"{feature_name} = {feature_mean}"
-    #     ax.text(-0.05, 0.50, ylabel, va='bottom', ha='center',
-    #                     rotation='vertical', rotation_mode='anchor',
-    #                     transform=ax.transAxes, fontsize = params['fontsize_title'], fontweight="bold")
         # Plot title below figure
         ax.set_title(viz_var_long[viz_var], fontsize = params['fontsize_title'],fontweight="bold",
                      y=-0.2, 
@@ -1651,7 +1661,7 @@ def plot_metric_maps_date(metric_dfs,
         #Add colorbar
         cb_shift = 0.02 if ncols == 4 else 0
         if CB_minmax != []:
-            if  (i == 0):#subplots_num-1):
+            if  (i == 0):
                 #Add colorbar for weeks 3-4 and 5-6
                 # first coordinate moves colorbar right as it increases
                 # second coordinate moves colorbar up as it increases
@@ -1662,20 +1672,13 @@ def plot_metric_maps_date(metric_dfs,
                     cb = fig.colorbar(plot, cax=cb_ax, cmap=cmap, orientation='vertical')
                 else:
                     cb = fig.colorbar(plot, cax=cb_ax, orientation='vertical')
-    #             cb_ax = fig.add_axes([0.14-cb_shift, 0.06, 0.18, 0.04]) #fig.add_axes([0.2, 0.08, 0.6, 0.02])
-    #             if CB_colors_customized is not None:
-    #                 cb = fig.colorbar(plot, cax=cb_ax, cmap=cmap, orientation='horizontal')
-    #             else:
-    #                 cb = fig.colorbar(plot, cax=cb_ax, orientation='horizontal')
                 cb.outline.set_edgecolor('black')
                 cb.ax.tick_params(labelsize=params['fontsize_ticks']) 
-                cbar_title = viz_var_long[viz_var] #+ f' per decile' #'Skill (%)' if 'skill' in metric else metric
+                cbar_title = viz_var_long[viz_var] 
                 if metric == 'lat_lon_error':
                     cbar_title = 'model bias (mm)' if 'precip' in gt_id else 'model bias ($^\degree$C)'
 
-                ###cb.ax.set_xlabel(cbar_title, fontsize=params['fontsize_title'], weight='bold')
                 if "linear" in scale_type:
-                    #cb_skip = 1#color_dic[(metric, gt_var, horizon)]['cb_skip']
                     cb_ticklabels = [f'{tick}' if 'icec' in viz_var else f'{tick:.0f}' 
                                      for tick in np.arange(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip)]
                     cb.set_ticks(np.arange(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip))
@@ -1738,7 +1741,7 @@ def plot_metric_maps_date(metric_dfs,
 
             # Set color parameters
             gt_id, horizon = task[:-4], task[-3:]
-            gt_var = "tmp2m" if "tmp2m" in gt_id else "precip" #gt_id.split("_")[-1]
+            gt_var = "tmp2m" if "tmp2m" in gt_id else "precip"
             if CB_minmax == []:
                 colorbar_min_value = color_dic[(metric, gt_var, horizon)]['colorbar_min_value'] 
                 colorbar_max_value = color_dic[(metric, gt_var, horizon)]['colorbar_max_value'] 
@@ -1789,34 +1792,27 @@ def plot_metric_maps_date(metric_dfs,
 
             mean_metric_title = f"{mean_metric}%" if 'skill' in metric else str(mean_metric)
             if x == 0 and y==0:
-    #             ax.set_title(f"{mean_metric_title}", fontsize = params['fontsize_title'],fontweight="bold")
-                #ax.set_ylabel(all_model_names[model_name], fontsize = params['fontsize_title'],fontweight="bold")
                 ax.text(0.005, 0.55, all_model_names[model_name], va='bottom', ha='center',
                         rotation='vertical', rotation_mode='anchor',
                         transform=ax.transAxes, fontsize = params['fontsize_title'], fontweight="bold")
             elif x == 0 and y==1:
-    #             ax.set_title(f"Skill: {mean_metric_title}%", fontsize = params['fontsize_title'],fontweight="bold")
-                #ax.set_ylabel(all_model_names[model_name], fontsize = params['fontsize_title'],fontweight="bold")
                 ax.text(0.005, 0.55, all_model_names[model_name], va='bottom', ha='center',
                         rotation='vertical', rotation_mode='anchor',
                         transform=ax.transAxes, fontsize = params['fontsize_title'], fontweight="bold")
             elif x == 0 and y>1:
                 ax.set_title(f"Skill: {mean_metric_title}%", fontsize = params['fontsize_title'],fontweight="bold")
-                #ax.set_ylabel(all_model_names[model_name], fontsize = params['fontsize_title'],fontweight="bold")
                 ax.text(0.005, 0.55, all_model_names[model_name], va='bottom', ha='center',
                         rotation='vertical', rotation_mode='anchor',
                         transform=ax.transAxes, fontsize = params['fontsize_title'], fontweight="bold")
             elif y>=1:
                 ax.set_title(f"{mean_metric_title}", fontsize = params['fontsize_title'],fontweight="bold")
 
-
-            #'''
             #Add colorbar
 
             if CB_minmax != []:
-                if  i == 0:#subplots_num-1:                
+                if  i == 0:                
                     #Add colorbar for weeks 3-4 and 5-6
-                    cb_ax = fig.add_axes([0.45-cb_shift, 0.06, 0.4, 0.04]) #fig.add_axes([0.2, 0.08, 0.6, 0.02])
+                    cb_ax = fig.add_axes([0.45-cb_shift, 0.06, 0.4, 0.04]) 
                     if CB_colors_customized is not None:
                         cb = fig.colorbar(plot, cax=cb_ax, cmap=cmap, orientation='horizontal')
                     else:
@@ -1849,9 +1845,7 @@ def plot_metric_maps_date(metric_dfs,
         make_directories(fig_dir)
         out_file = os.path.join(fig_dir, fig_filename) 
         plt.savefig(out_file, orientation = 'landscape', bbox_inches='tight')
-    #     plt.savefig(out_file.replace('.pdf','.png'), orientation = 'landscape', bbox_inches='tight')
         subprocess.call("chmod a+w "+out_file, shell=True)
-        subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
         print(f"\nFigure saved: {out_file}\n")
 
         #Save Figure source data  
@@ -1870,8 +1864,6 @@ def plot_metric_maps_date(metric_dfs,
         if not show:
             fig.clear()
             plt.close(fig)  
-
-    #     return fig
 
                                           
 def plot_mjo_impact(df_cs, X_q,  
@@ -1931,7 +1923,6 @@ def plot_mjo_impact(df_cs, X_q,
     plt.plot([-2, 2], [-2, 2], 'black', lw=2, alpha=0.4)
     plt.plot([-2, 2], [0, 0], 'black', lw=2, alpha=0.4)
     plt.plot([0, 0], [-2, 2], 'black', lw=2, alpha=0.4)
-    # plt.plot([0, -2], [0, 2], 'black', lw=2)
 
     for i, id in enumerate(triangles):
         if  impact_min-errors_min <= impact_levels[i] <= impact_min+errors_min:
@@ -1943,7 +1934,7 @@ def plot_mjo_impact(df_cs, X_q,
             ax.text(*triangles[id]["prob_position"], probabilities[i], fontsize=12, color="blue")
             ax.text(*triangles[id]["text_position"], id, fontsize=12)
         else:
-            plt.fill(triangles[id]["x"], triangles[id]["y"], 'darkorange', alpha=impact_levels[i])#'#1102b3', alpha=impact_levels[i])
+            plt.fill(triangles[id]["x"], triangles[id]["y"], 'darkorange', alpha=impact_levels[i])
             ax.text(*triangles[id]["prob_position"], probabilities[i], fontsize=12)
             ax.text(*triangles[id]["text_position"], id, fontsize=12)
 
@@ -1966,7 +1957,7 @@ def plot_mjo_impact(df_cs, X_q,
     out_file = os.path.join(out_dir, "bin_figs", 
         f'{model_str}-mjo-{gt_id}_{horizon}-{target_dates}-{feature}.pdf')
     plt.savefig(out_file, orientation = 'landscape', bbox_inches='tight')
-    # plt.close(fig)
+
     # Ensure saved files have full read and write permissions
     set_file_permissions(out_file, mode=0o666)
     print(f"\nFigure saved: {out_file}\n")  
@@ -1994,14 +1985,13 @@ def table_to_tex(df, out_dir, filename, precision=2):
     """ Write a pandas table to tex """
 
     # Save dataframe in latex table format
-    out_file = f'{out_dir}/{filename}.tex'
+    out_file = os.path.join(out_dir, f"{filename}.tex")
     try:
-        df.to_latex(out_file, float_format=f"%.{precision}f")#, encoding='utf-8', escape=False)
+        df.to_latex(out_file, float_format=f"%.{precision}f")
     except:
-        df.to_latex(out_file)#, encoding='utf-8', escape=False)
+        df.to_latex(out_file)
 
     subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
                          
 def plot_opportunistic_abc(X, X_q, df_cs, y, metrics, metrics2, order,
                             model,
@@ -2013,6 +2003,16 @@ def plot_opportunistic_abc(X, X_q, df_cs, y, metrics, metrics2, order,
                             show = True,
                             source_data = True,
                             source_data_filename = "fig_6-windows_opportunity_abc.xlsx"):
+                         
+    sns.set_theme(style="whitegrid")
+    sns.set_style("whitegrid")
+    plt.rcParams.update({'font.size': 20,
+                         'figure.titlesize' : 20,
+                         'figure.titleweight': 'bold',
+                         'lines.markersize'  : 20,
+                         'xtick.labelsize'  : 19,
+                         'ytick.labelsize'  : 19})
+         
     # Load data for third model: either raw or debiased
     if model2.startswith("raw_"):
         raw_model = model2
@@ -2096,23 +2096,24 @@ def plot_opportunistic_abc(X, X_q, df_cs, y, metrics, metrics2, order,
         opportunity_high[num_name],
         opportunity_high[abc_high_name],
         label="ABC-ECMWF on high-impact dates",
-        color='tab:blue', linestyle='dashed')
+        color='tab:blue', linestyle='dashed', linewidth=5)
     plt.plot(
         opportunity_high[num_name],
         opportunity_high[deb_high_name],
         label="Deb. ECMWF on high-impact dates",
-        color='tab:red', linestyle='dashdot')
+        color='tab:red', linestyle='dashdot', linewidth=5)
     plt.plot(
         opportunity_high[num_name],
         opportunity_high[op_name],
         label="Opportunistic ABC on all dates",
-        color='tab:green', linewidth=2)
-    plt.ylabel("Skill", fontsize=12, weight='bold')
-    plt.xlabel("Minimum number of high-impact features", fontsize=12, weight='bold')
-    plt.legend(prop={"size":12})
+        color='tab:green', linewidth=5)
+    plt.ylabel("Skill", fontsize=18, weight='bold')
+    plt.xlabel("Minimum number of high-impact features", fontsize=18, weight='bold')
+    plt.legend(prop={"size":16})
     plt.tight_layout()
-    # plt.show()
-
+    plt.grid(False)
+    ax = plt.gca()
+    ax.tick_params(width=10)
 
     out_file = os.path.join(fig_dir, "opportunity_lineplot.pdf")
     plt.savefig(out_file)
@@ -2134,9 +2135,7 @@ def plot_opportunistic_abc(X, X_q, df_cs, y, metrics, metrics2, order,
         printf(f'Source data saved {fig_filename}')
         set_file_permissions(fig_filename, mode=0o666)
 
-#     fig = plt.get_figure()
     if not show:
-#         fig.clear()
         plt.close()  
                                           
                                           
@@ -2149,7 +2148,7 @@ def barplot_rawabc_quarterly(model_names,
                              quarter, 
                              show=True,
                             source_data = True,
-                            source_data_filename = "fig_a1-average_skill_season.xlsx"): 
+                            source_data_filename = "fig_s1-average_skill_season.xlsx"): 
     sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 0.5})
     sns.set_theme(style="whitegrid")
     sns.set_palette("Paired")
@@ -2173,7 +2172,6 @@ def barplot_rawabc_quarterly(model_names,
         model_names = [m for m in model_names if m not in figure_models_missing56w]
     df_barplot = pd.DataFrame(columns=['start_date', metric, 'debias_method', 'model'])
     for i, m in enumerate(model_names):
-    #     print(m)
         sn = get_selected_submodel_name(m, gt_id, horizon)
         f = os.path.join('eval', 'metrics', m, 'submodel_forecasts', sn, task, f'{metric}-{task}-{target_dates}.h5')
         if os.path.isfile(f):
@@ -2196,7 +2194,7 @@ def barplot_rawabc_quarterly(model_names,
 })
     fig_title = f"{task.replace('_','').replace('precip',' Precipitation').replace('tmp2m',' Temperature').replace('us','U.S.')}"
     fig_title = fig_title.replace('56w', ', weeks 5-6').replace('34w', ', weeks 3-4').replace('12w', ', weeks 1-2').replace('1.5x1.5', '')
-    fig_title = f"{fig_title}\n{quarter}"#{target_dates_str}: {target_dates_start} to {target_dates_end}"
+    fig_title = f"{fig_title}\n{quarter}"
     ax.set_title(fig_title, weight='bold', fontdict={'size': 25})
     ax.set_xticklabels(ax.get_xticklabels(), fontdict={'size': 25}, rotation = 90)
     ax.set(xlabel=None)
@@ -2219,7 +2217,6 @@ def barplot_rawabc_quarterly(model_names,
     out_file = os.path.join(out_dir,     "barplots",f"barplot_{metric}_{task}_{target_dates}_{quarter.lower()}.pdf")
     fig.savefig(out_file, bbox_inches='tight') 
     subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     print(f"\nFigure saved: {out_file}\n")
     if show is False:
         fig.clear()
@@ -2240,7 +2237,7 @@ def barplot_rawabc_quarterly(model_names,
                                           
 def barplot_baselineabc(model_names, gt_id, horizon, metric, target_dates, show=True,
                             source_data = True,
-                            source_data_filename = "fig_a2-average_skill_baselines.xlsx"):  
+                            source_data_filename = "fig_s2-average_skill_baselines.xlsx"):  
     sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 0.5})
     sns.set_theme(style="whitegrid")
     sns.set_palette("Paired")
@@ -2251,22 +2248,19 @@ def barplot_baselineabc(model_names, gt_id, horizon, metric, target_dates, show=
     task = f"{gt_id}_{horizon}"
     df_barplot = pd.DataFrame(columns=['start_date', metric, 'model'])
     for i, m in enumerate(model_names):
-    #     print(m)
         sn = get_selected_submodel_name(m, gt_id, horizon)
         f = os.path.join('eval', 'metrics', m, 'submodel_forecasts', sn, task, f'{metric}-{task}-{target_dates}.h5')
         if os.path.isfile(f):
             df = pd.read_hdf(f)
-#             df['debias_method'] = 'Dynamical' if m.split('_')[0]=='raw' else 'ABC'
-            df['model'] = all_model_names[m]#f"raw_{'_'.join(m.split('_')[1:])}"]
+            df['model'] = all_model_names[m]
             df_barplot = df_barplot.append(df)
         else:
             printf(f"Metrics file missing for {metric} {m} {task}\n{f}")
     
-    ax = sns.barplot(x="model", y=metric, data=df_barplot, ci=95, capsize=0.1, color="skyblue")#, 
-#                      hue="debias_method", palette={'Dynamical': 'red','ABC': 'skyblue' })
+    ax = sns.barplot(x="model", y=metric, data=df_barplot, ci=95, capsize=0.1, color="skyblue")
     fig_title = f"{task.replace('_','').replace('precip',' Precipitation').replace('tmp2m',' Temperature').replace('us','U.S.')}"
     fig_title = fig_title.replace('56w', ', weeks 5-6').replace('34w', ', weeks 3-4').replace('12w', ', weeks 1-2').replace('1.5x1.5', '')
-    fig_title = f"{fig_title}\n"#{target_dates_str}: {target_dates_start} to {target_dates_end}"
+    fig_title = f"{fig_title}\n"
     ax.set_title(fig_title, weight='bold')
     ax.set_xticklabels(ax.get_xticklabels(), fontdict={'size': 16}, rotation = 90)
     ax.set(xlabel=None)
@@ -2283,9 +2277,7 @@ def barplot_baselineabc(model_names, gt_id, horizon, metric, target_dates, show=
     fig = ax.get_figure()
     out_file = os.path.join(out_dir, "barplots", f"barplot_baselines_{metric}_{task}_{target_dates}.pdf")
     fig.savefig(out_file, bbox_inches='tight') 
-#     fig.savefig(out_file.replace(".pdf", ".png"), bbox_inches='tight') 
     subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     print(f"\nFigure saved: {out_file}\n")
     if show is False:
         fig.clear()
@@ -2309,7 +2301,7 @@ def plot_variable_importance(X, vs_values, order,
                              gt_id = "us_precip_1.5x1.5", 
                              horizon = "34w", 
                              source_data=False,
-                             source_data_filename = "fig_a12-variable_importance.xlsx",
+                             source_data_filename = "fig_s12-variable_importance.xlsx",
                              show=True):
                                           
     plt.rcParams.update({'font.size': 10,
@@ -2320,16 +2312,14 @@ def plot_variable_importance(X, vs_values, order,
                          'xtick.labelsize'  : 10,
                          'ytick.labelsize'  : 10})
 
-    ### TODO: improve title
+
     title = f"{gt_id} {horizon}"
     if model2 is None:
         title += f", {all_model_names[model]}"
     else:
         title += f" ({all_model_names[model]} vs. {all_model_names[model2]})"
     ylabel = 'Variable importance'
-    # printf(title)
     title = title.replace('_','').replace('1.5x1.5','').replace('us','U.S.').replace('precip',' Precipitation').replace('tmp2m',' Temperature').replace('56w', ', weeks 5-6').replace('34w', ', weeks 3-4').replace('12w', ', weeks 1-2').replace(' ,', ',')
-    # printf(title)
     fig=plt.figure(dpi=300)
     ax = plt.bar(X.columns[order],vs_values[order])
     plt.title(title, fontdict={'weight': 'bold'})
@@ -2346,7 +2336,6 @@ def plot_variable_importance(X, vs_values, order,
     make_directories(out_dir_fig)
     fig.savefig(out_file, bbox_inches='tight')
     subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     printf(f"\nFigure saved: {out_file}\n")                        
 
     #Save Figure source data                          
@@ -2369,37 +2358,33 @@ def plot_variable_importance(X, vs_values, order,
         fig.clear()
         plt.close(fig)  
                             
-#     return fig
                                           
 def barplot_rawabc_bss(model_names, gt_id, horizon, metric, target_dates,
                            source_data=False,
-                           source_data_filename = "fig_a5-average_bss.xlsx",
+                           source_data_filename = "fig_s5-average_bss.xlsx",
                            show=True):
     
     sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 0.5})
     sns.set_theme(style="whitegrid")
     sns.set_palette("Paired")
     sns.set(font_scale = 1.5, rc={'font.weight': 'bold', 'figure.facecolor':'white', "lines.linewidth": 0.75})
-    sns.set_style("whitegrid")#, {'legend.frameon':True})
+    sns.set_style("whitegrid")
     
     
     target_dates_objs = get_target_dates(target_dates)
     task = f'{gt_id}_{horizon}'
     df_barplot = pd.DataFrame(columns=['start_date', metric, 'model'])
     for i, m in enumerate(model_names):
-    #     print(m)
         sn = get_selected_submodel_name(m, gt_id, horizon)
         f = os.path.join('eval', 'metrics', m, 'submodel_forecasts', sn, task, f'{metric}-{task}-{target_dates}.h5')
         if os.path.isfile(f):
             df = pd.read_hdf(f)
-#             df['debias_method'] = 'Dynamical' if m.split('_')[0]=='raw' else 'ABC'
-            df['model'] = all_model_names[m]#f"raw_{'_'.join(m.split('_')[1:])}"]
+            df['model'] = all_model_names[m]
             df_barplot = df_barplot.append(df)
         else:
             printf(f"Metrics file missing for {metric} {m} {task}")
     df_barplot["quarter"] = pd.Series([f"Q{year_quarter(date)}" for date in df_barplot.start_date], index=df_barplot.index)
     df_barplot = df_barplot.replace({"quarter": {"Q0":"DJF", "Q1":"MAM", "Q2":"JJA", "Q3":"SON"}})
-#     display(df_barplot)
     ax = sns.barplot(x="quarter", y=metric, hue="model", data=df_barplot, ci=95, capsize=0.1, palette={
         'ECMWF': 'red',
         'ABC-ECMWF': 'skyblue'
@@ -2445,7 +2430,6 @@ def barplot_rawabc_bss(model_names, gt_id, horizon, metric, target_dates,
     make_directories(out_dir_fig)
     fig.savefig(out_file, bbox_inches='tight')
     subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     printf(f"\nFigure saved: {out_file}\n")                      
     
     #Save Figure source data                          
@@ -2468,24 +2452,23 @@ def barplot_rawabc_bss(model_names, gt_id, horizon, metric, target_dates,
                                           
 def barplot_rawabc_crps(model_names, gt_id, horizon, metric, target_dates,
                             source_data=False,
-                            source_data_filename = "fig_a6-average_crps.xlsx",
+                            source_data_filename = "fig_s6-average_crps.xlsx",
                             show=True):
     sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 0.5})
     sns.set_theme(style="whitegrid")
     sns.set_palette("Paired")
     sns.set(font_scale = 1.5, rc={'font.weight': 'bold', 'figure.facecolor':'white', "lines.linewidth": 0.75})
-    sns.set_style("whitegrid")#, {'legend.frameon':True})
+    sns.set_style("whitegrid")
     
     target_dates_objs = get_target_dates(target_dates)
     task = f'{gt_id}_{horizon}'
     df_barplot = pd.DataFrame(columns=['start_date', metric, 'model'])
     for i, m in enumerate(model_names):
-    #     print(m)
         sn = get_selected_submodel_name(m, gt_id, horizon)
         f = os.path.join('eval', 'metrics', m, 'submodel_forecasts', sn, task, f'{metric}-{task}-{target_dates}.h5')
         if os.path.isfile(f):
             df = pd.read_hdf(f)
-            df['model'] = all_model_names[m]#f"raw_{'_'.join(m.split('_')[1:])}"]
+            df['model'] = all_model_names[m]
             df_barplot = df_barplot.append(df)
         else:
             printf(f"Metrics file missing for {metric} {m} {task}")
@@ -2498,7 +2481,7 @@ def barplot_rawabc_crps(model_names, gt_id, horizon, metric, target_dates,
     
     fig_title = f"{task.replace('_','').replace('precip',' Precipitation').replace('tmp2m',' Temperature').replace('us','U.S.')}"
     fig_title = fig_title.replace('56w', ', weeks 5-6').replace('34w', ', weeks 3-4').replace('12w', ', weeks 1-2').replace('1.5x1.5', '')
-    fig_title = f"{fig_title}\n"#{target_dates_str}: {target_dates_start} to {target_dates_end}"
+    fig_title = f"{fig_title}\n"
     ax.set_title(fig_title, weight='bold')
     ax.set(xlabel=None)
     ax.set_ylabel(metric.upper(), fontdict={'weight': 'bold'})
@@ -2536,7 +2519,6 @@ def barplot_rawabc_crps(model_names, gt_id, horizon, metric, target_dates,
     make_directories(out_dir_fig)
     fig.savefig(out_file, bbox_inches='tight')
     subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     printf(f"\nFigure saved: {out_file}\n")                      
     
     #Save Figure source data                          
@@ -2558,26 +2540,24 @@ def barplot_rawabc_crps(model_names, gt_id, horizon, metric, target_dates,
                                           
 def barplot_baselinesabc_bss(model_names, gt_id, horizon, metric, target_dates,
                             source_data=False,
-                            source_data_filename = "fig_a7-average_bss_baselines.xlsx",
+                            source_data_filename = "fig_s7-average_bss_baselines.xlsx",
                             show=True):
     
     sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 0.5})
     sns.set_theme(style="whitegrid")
     sns.set_palette("Paired")
     sns.set(font_scale = 1.5, rc={'font.weight': 'bold', 'figure.facecolor':'white', "lines.linewidth": 0.75})
-    sns.set_style("whitegrid")#, {'legend.frameon':True})    
+    sns.set_style("whitegrid")
     
     target_dates_objs = get_target_dates(target_dates)
     task = f'{gt_id}_{horizon}'
     df_barplot = pd.DataFrame(columns=['start_date', metric, 'model'])
     for i, m in enumerate(model_names):
-#         print(m)
         sn = get_selected_submodel_name(m, gt_id, horizon)
-#         print(sn)
         f = os.path.join('eval', 'metrics', m, 'submodel_forecasts', sn, task, f'{metric}-{task}-{target_dates}.h5')
         if os.path.isfile(f):
             df = pd.read_hdf(f)
-            df['model'] = all_model_names[m]#f"raw_{'_'.join(m.split('_')[1:])}"]
+            df['model'] = all_model_names[m]
             df_barplot = df_barplot.append(df)
         else:
             printf(f"Metrics file missing for {metric} {m} {task}")
@@ -2591,7 +2571,7 @@ def barplot_baselinesabc_bss(model_names, gt_id, horizon, metric, target_dates,
     
     fig_title = f"{task.replace('_','').replace('precip',' Precipitation').replace('tmp2m',' Temperature').replace('us','U.S.')}"
     fig_title = fig_title.replace('56w', ', weeks 5-6').replace('34w', ', weeks 3-4').replace('12w', ', weeks 1-2').replace('1.5x1.5', '')
-    fig_title = f"{fig_title}\n"#{target_dates_str}: {target_dates_start} to {target_dates_end}"
+    fig_title = f"{fig_title}\n"
     ax.set_title(fig_title, weight='bold')
     ax.set(xlabel=None)
     ax.set_ylabel(metric.upper(), fontdict={'weight': 'bold'})
@@ -2628,12 +2608,11 @@ def barplot_baselinesabc_bss(model_names, gt_id, horizon, metric, target_dates,
     make_directories(out_dir_fig)
     fig.savefig(out_file, bbox_inches='tight')
     subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     printf(f"\nFigure saved: {out_file}\n")                      
     
-    #Save Figure source data                          
-    if source_data:
-        fig_filename = os.path.join(source_data_dir, source_data_filename)    
+    #Save Figure source data
+    fig_filename = os.path.join(source_data_dir, source_data_filename)
+    if source_data:    
         if os.path.isfile(fig_filename):
             with pd.ExcelWriter(fig_filename, engine="openpyxl", mode='a') as writer:  
                 df_barplot.to_excel(writer, sheet_name=task, na_rep="NaN") 
@@ -2652,21 +2631,20 @@ def barplot_baselinesabc_bss(model_names, gt_id, horizon, metric, target_dates,
                                           
 def barplot_baselinesabc_crps(model_names, gt_id, horizon, metric, target_dates,
                             source_data=False,
-                            source_data_filename = "fig_a8-average_crps_baselines.xlsx",
+                            source_data_filename = "fig_s8-average_crps_baselines.xlsx",
                             show=True):
     
     sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 0.5})
     sns.set_theme(style="whitegrid")
     sns.set_palette("Paired")
     sns.set(font_scale = 1.5, rc={'font.weight': 'bold', 'figure.facecolor':'white', "lines.linewidth": 0.75})
-    sns.set_style("whitegrid")#, {'legend.frameon':True})
+    sns.set_style("whitegrid")
 
     
     target_dates_objs = get_target_dates(target_dates)
     task = f'{gt_id}_{horizon}'
     df_barplot = pd.DataFrame(columns=['start_date', metric, 'model'])
     for i, m in enumerate(model_names):
-    #     print(m)
         sn = get_selected_submodel_name(m, gt_id, horizon)
         f = os.path.join('eval', 'metrics', m, 'submodel_forecasts', sn, task, f'{metric}-{task}-{target_dates}.h5')
         if os.path.isfile(f):
@@ -2685,7 +2663,7 @@ def barplot_baselinesabc_crps(model_names, gt_id, horizon, metric, target_dates,
     
     fig_title = f"{task.replace('_','').replace('precip',' Precipitation').replace('tmp2m',' Temperature').replace('us','U.S.')}"
     fig_title = fig_title.replace('56w', ', weeks 5-6').replace('34w', ', weeks 3-4').replace('12w', ', weeks 1-2').replace('1.5x1.5', '')
-    fig_title = f"{fig_title}\n"#{target_dates_str}: {target_dates_start} to {target_dates_end}"
+    fig_title = f"{fig_title}\n"
     ax.set_title(fig_title, weight='bold')
     ax.set(xlabel=None)
     ax.set_ylabel(metric.upper(), fontdict={'weight': 'bold'})
@@ -2722,7 +2700,6 @@ def barplot_baselinesabc_crps(model_names, gt_id, horizon, metric, target_dates,
     make_directories(out_dir_fig)
     fig.savefig(out_file, bbox_inches='tight')
     subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     printf(f"\nFigure saved: {out_file}\n")                      
     
     #Save Figure source data                          
@@ -2753,72 +2730,6 @@ def _repr_html_(self):
 
 def _repr_latex_(self):
     return r'\includegraphics[width=1.0\textwidth]{{{0}}}'.format(self.pdf)                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
-                                          
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                            
