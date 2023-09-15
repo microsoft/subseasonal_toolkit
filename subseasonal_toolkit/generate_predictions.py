@@ -223,21 +223,23 @@ for model, gt_id, horizon in product(models, gt_iteration, hz_iteration):
     '''
     Run selected submodel
     '''
+    if cluster_str:
+        cluster_str = " " + cluster_str
     if tuned:
         predict_script = resource_filename(__name__, os.path.join("models","tuner","batch_predict.py"))
         cmd = f"{cmd_prefix} {cluster_str} \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} -mn {model} -y 3 -m None {cmd_suffix}"
     elif d2p:
         predict_script = resource_filename(__name__, os.path.join("models","d2p","batch_predict.py"))
-        cmd = f"{cmd_prefix} {cluster_str} \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} -mn {model} {cmd_suffix}"
+        cmd = f"{cmd_prefix}{cluster_str} \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} -mn {model} {cmd_suffix}"
     elif bulk:
         predict_script = resource_filename(__name__, os.path.join("models",model,"bulk_batch_predict.py"))
-        cmd = f"python \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} -c \"{cmd_prefix} {cluster_str}\" {cmd_suffix}"
+        cmd = f"python \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} -c \"{cmd_prefix}{cluster_str}\" {cmd_suffix}"
     elif abc:
         predict_script = resource_filename(__name__, os.path.join("models","abc","batch_predict.py"))
-        cmd = f"python \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} -f {model} -c \"{cmd_prefix} {cluster_str}\""
+        cmd = f"python \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} -f {model} -c \"{cmd_prefix}{cluster_str}\""
     else:
         predict_script = resource_filename(__name__, os.path.join("models",model,"batch_predict.py"))
-        cmd = f"{cmd_prefix} {cluster_str} \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} {args_str} {cmd_suffix}"
+        cmd = f"{cmd_prefix}{cluster_str} \"{predict_script}\" {gt_id} {horizon} -t {target_date_str} {args_str} {cmd_suffix}"
 
     printf(f"Running {cmd}")
     if bulk or abc or cmd_prefix == "python":
