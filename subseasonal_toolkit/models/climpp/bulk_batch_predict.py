@@ -38,7 +38,7 @@ args = parser.parse_args()
 gt_id = args.pos_vars[0]
 horizon = args.pos_vars[1]
 target_dates = args.target_dates
-cmd_prefix = args.cmd_prefix
+cmd_prefix = args.cmd_prefix.strip()
 metrics_only = args.metrics_only
 
 # Specify list of parameter settings to run
