@@ -3,7 +3,7 @@
 The `subseasonal_toolkit` package provides implementations of the subseasonal forecasting ABC model of
 
 [Adaptive Bias Correction for Subseasonal Forecasting](https://arxiv.org/pdf/2209.10666.pdf)  
-Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Judah Cohen, Miruna Oprescu, Ernest Fraenkel, and Lester Mackey.  June 2023.
+Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Judah Cohen, Miruna Oprescu, Ernest Fraenkel, and Lester Mackey. Nature Communications. June 2023.
 
 ```
 @article{mouatadid2023adaptive,
@@ -19,15 +19,17 @@ Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Judah Cohen, Miruna O
 and the machine learning models and meteorological baselines of
 
 [SubseasonalClimateUSA: A Dataset for Subseasonal Forecasting and Benchmarking](https://arxiv.org/pdf/2109.10399.pdf)  
-Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Miruna Oprescu, Judah Cohen, Franklyn Wang, Sean Knight, Maria Geogdzhayeva, Sam Levang, Ernest Fraenkel, and Lester Mackey.  Sep. 2021.
+Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Miruna Oprescu, Judah Cohen, Franklyn Wang, Sean Knight, Maria Geogdzhayeva, Sam Levang, Ernest Fraenkel, and Lester Mackey. Advances in Neural Information Processing Systems (NeurIPS). Dec. 2023.
 
 ```
-@article{
-  mouatadid2021toolkit,
-  title={SubseasonalClimateUSA: A Dataset for Subseasonal Forecasting and Benchmarking},
-  author={Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Miruna Oprescu, Judah Cohen, Franklyn Wang, Sean Knight, Maria Geogdzhayeva, Sam Levang, Ernest Fraenkel, and Lester Mackey},
-  journal={arXiv preprint arXiv:2109.10399},
-  year={2021}
+@inproceedings{mouatadid2023toolkit,
+ author = {Soukayna Mouatadid, Paulo Orenstein, Genevieve Flaspohler, Miruna Oprescu, Judah Cohen, Franklyn Wang, Sean Knight, Maria Geogdzhayeva, Sam Levang, Ernest Fraenkel, and Lester Mackey},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {A. Globerson and K. Saenko and M. Hardt and S. Levine},
+ publisher = {Curran Associates, Inc.},
+ title = {SubseasonalClimateUSA: A Dataset for Subseasonal Forecasting and Benchmarking},
+ volume = {36},
+ year = {2023}
 }
 ```
 
