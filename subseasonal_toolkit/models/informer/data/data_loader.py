@@ -326,7 +326,7 @@ class ForecastRodeoDay(Dataset):
         #df_raw = pd.read_hdf(os.path.join(self.root_path,
         #                                  self.data_path))
         from subseasonal_data import data_loaders
-        df_raw = data_loaders.get_ground_truth("us_" + self.target, sync=False).reset_index()
+        df_raw = data_loaders.get_ground_truth(self.task_name, sync=False).reset_index()
         if isinstance(df_raw, pd.Series):
             df_raw = pd.DataFrame(df_raw)
         df_full = pd.pivot_table(df_raw, values=self.target, index="start_date", columns=['lat', 'lon'])
