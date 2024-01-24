@@ -1,38 +1,42 @@
 # Utility functions supporting visualization
 
 import json
+import subprocess
+import calendar
+import os
+import pdb
+import pandas as pd
+import seaborn as sns
+import numpy as np
 from glob import glob
 from pathlib import Path
-import pandas as pd
 from string import Template
-import subprocess
-import matplotlib.pyplot as plt
 from itertools import product
-import seaborn as sns
-import calendar
 from functools import partial
 from datetime import datetime
-import os
-import numpy as np
-from matplotlib.gridspec import GridSpec
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
 import matplotlib
 import matplotlib.ticker as mtick
-import pdb
-from ttictoc import tic, toc
+import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.lines import Line2D
-
-
-from subseasonal_toolkit.utils.experiments_util import pandas2hdf
+from matplotlib.gridspec import GridSpec
+from matplotlib.colors import LinearSegmentedColormap
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+from ttictoc import tic, toc
+from subseasonal_toolkit.utils.experiments_util import pandas2hdf, get_climatology, get_ground_truth
 from subseasonal_toolkit.utils.models_util import get_selected_submodel_name
 from subseasonal_toolkit.utils.eval_util import get_target_dates, score_to_mean_rmse, contest_quarter_start_dates, contest_quarter, year_quarter, mean_rmse_to_score
-from subseasonal_toolkit.utils.experiments_util import get_climatology, get_ground_truth
 from subseasonal_data.utils import get_measurement_variable
-from subseasonal_toolkit.utils.general_util import printf, make_directories
+from subseasonal_toolkit.utils.general_util import printf, make_directories, set_file_permissions
 from subseasonal_toolkit.models.tuner.util import load_metric_df, get_tuning_dates, get_tuning_dates_selected_submodel, get_target_dates_all
 
+        
+out_dir = "/home/{}/forecast_rodeo_ii/subseasonal_toolkit/viz/benchmark".format(os.environ["USER"])
+make_directories(out_dir)
+
+tables_dir = os.path.join(out_dir, 'tables')
+make_directories(tables_dir)
 
 
 plt.rcParams.update({'font.size': 86,
@@ -43,8 +47,6 @@ plt.rcParams.update({'font.size': 86,
                      'ytick.labelsize'  : 64})
 
 
-out_dir = "src/visualize"
-
 
 all_model_names = {
     "tuned_climpp" : "Climatology++", 
@@ -54,31 +56,42 @@ all_model_names = {
     "salient": "Salient",
     "persistence" : "Persistence", 
     "perpp" : "Persistence++", 
+    "perpp_cfsv2" : "Persistence++", 
     "multillr" : "MultiLLR", 
     "autoknn" : "AutoKNN",
     "climatology" : "Climatology", 
     "raw_cfsv2" : "CFSv2", 
     "deb_cfsv2" : "Debiased CFSv2", 
+    "deb_ecmwf" : "Debiased ECMWF", 
     "nbeats" : "N-Beats", 
     "prophet" : "Prophet",
     "informer" : "Informer",
     "Climatology" : "Contest Climatology",
-    "online_learning" : "Online Toolkit",
-    "online_learning-ah_rpNone_R1_recent_g_SC_LtCtD": "Online Toolkit",
-    "online_learning-ah_rpNone_R1_recent_g_SC_AMLPtCtDtKtS": "Online Toolkit + Learning",
-    "online_learning-ah_rpNone_R1_recent_g_SP_LtCtD": "Online Toolkit",
-    "online_learning-ah_rpNone_R1_recent_g_SP_AMLPtCtDtKtS": "Online Toolkit + Learning",
-    "online_learning-ah_rpNone_R1_recent_g_std_ecmwf_LtCtD": "Online Toolkit",
-    "online_learning-ah_rpNone_R1_recent_g_std_ecmwf_AMLPtCtDtKtS": "Online Toolkit + Learning",
-    "linear_ensemble": "Uniform Toolkit",
-    'linear_ensemble_localFalse_dynamicFalse_stepFalse_LtCtD': "Uniform Toolkit",
-    'linear_ensemble_localFalse_dynamicFalse_stepFalse_AMLPtCtDtKtS': "Uniform Toolkit + Learning",      
+    "online_learning" : "Online ABC",#ABC",
+    "online_learning-ah_rpNone_R1_recent_g_SC_LtCtD": "Online ABC",
+    "online_learning-ah_rpNone_R1_recent_g_SC_AMLPtCtDtKtS": "Online ABC + Learning",
+    "online_learning-ah_rpNone_R1_recent_g_SP_LtCtD": "Online ABC",
+    "online_learning-ah_rpNone_R1_recent_g_SP_AMLPtCtDtKtS": "Online ABC + Learning",
+    "online_learning-ah_rpNone_R1_recent_g_std_ecmwf_LtCtD": "Online ABC",
+    "online_learning-ah_rpNone_R1_recent_g_std_ecmwf_AMLPtCtDtKtS": "Online ABC + Learning",
+    "linear_ensemble": "Uniform ABC",#ABC",
+    'linear_ensemble_localFalse_dynamicFalse_stepFalse_LtCtD': "Uniform ABC",
+    'linear_ensemble_localFalse_dynamicFalse_stepFalse_AMLPtCtDtKtS': "Uniform ABC + Learning",      
     "gt": "Ground truth",
+    "graphcast": "Graphcast",
     "ecmwf": "ECMWF",
     "ecmwf-years20_leads15-15_lossmse_forecastc_debiasp+c": "Debiased Control 34w",
     "ecmwf-years20_leads15-15_lossmse_forecastp_debiasp+c": "Debiased Ensemble 34w",   
     "ecmwf-years20_leads29-29_lossmse_forecastc_debiasp+c": "Debiased Control 56w",
     "ecmwf-years20_leads29-29_lossmse_forecastp_debiasp+c": "Debiased Ensemble 56w",   
+    "raw_ecmwf": "ECMWF",
+    "raw_ccsm4": "CCSM4",
+    "raw_geos_v2p1": "GEOS_V2p1",
+    "raw_nesm": "NESM",
+    "raw_fimr1p1": "FIMr1p1",
+    "raw_gefs": "GEFS",
+    "raw_gem": "GEM",
+    "raw_subx_mean": "SubX",
 }
 
 all_model_types = {
@@ -88,9 +101,10 @@ all_model_types = {
     "climatology" : "Baselines", 
     "Climatology" : "Baselines",
     "persistence" : "Baselines",
-    "tuned_climpp" : "Toolkit", 
-    "tuned_cfsv2pp" : "Toolkit", 
-    "perpp" : "Toolkit", 
+    "tuned_climpp" : "ABC", 
+    "tuned_cfsv2pp" : "ABC", 
+    "perpp" : "ABC", 
+    "perpp_cfsv2" : "ABC", 
     "tuned_localboosting" : "Learning", 
     "tuned_salient2" : "Learning",  
     "salient": "Learning",
@@ -109,7 +123,9 @@ all_model_types = {
     "linear_ensemble": "Ensembles",
     "linear_ensemble_localFalse_dynamicFalse_stepFalse_LtCtD": "Ensembles",
     "linear_ensemble_localFalse_dynamicFalse_stepFalse_AMLPtCtDtKtS": "Ensembles",      
+    "graphcast": "Learning",
     "ecmwf": "ECMWF",
+    "deb_ecmwf": "ECMWF",
     "ecmwf-years20_leads15-15_lossmse_forecastc_debiasp+c": "ECMWF",
     "ecmwf-years20_leads15-15_lossmse_forecastp_debiasp+c": "ECMWF",   
     "ecmwf-years20_leads29-29_lossmse_forecastc_debiasp+c": "ECMWF",
@@ -293,7 +309,7 @@ def get_metrics_df(gt_id= "contest_precip",
                 model_df = pd.read_hdf(filename).rename({metric: model_name}, axis=1)
                 metrics_df = pd.merge(metrics_df, model_df, on=["start_date"], how="left")
             except FileNotFoundError:
-                print(f"\tNo metrics for model {model_name}")
+                print(f"\tNo metrics for model {model_name} {sn}")
                 continue
         elif model_name in list_submodel_names:   
             # Get the selected submodel name
@@ -628,16 +644,20 @@ def plot_models_and_metrics_plus(get_metrics_fh, gt_id_list, horizon_list,
     
 
     #save figure
-    out_file = f"{out_dir}/lineplot_paired_{metric}_{target_dates}_{file_str}.pdf"
     fig = ax.get_figure()
+    fig_dir = os.path.join(out_dir, "figures", "lineplots")
+    out_file = f"{fig_dir}/lineplot_paired_{metric}_{target_dates}_{file_str}.pdf"
+    make_directories(fig_dir)
     fig.savefig(out_file, bbox_inches='tight')
-    subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
+    set_file_permissions(out_file)
+    printf(f"Figure saved: {out_file}")
+#     subprocess.call("chmod a+w "+out_file, shell=True)
+#     subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     plt.show()
     
 
 
-def plot_toolkit_vs_learner(get_metrics_fh, gt_id_list, horizon_list,
+def plot_ABC_vs_learner(get_metrics_fh, gt_id_list, horizon_list,
                             metric, target_dates, model_names, file_str=""):
     """ Plot model performance for a given metrics file
 
@@ -683,10 +703,10 @@ def plot_toolkit_vs_learner(get_metrics_fh, gt_id_list, horizon_list,
 
         
         baseline_model_name = ['Debiased CFSv2']
-        toolkit_model_names = ['Climatology++', 'CFSv2++', 'Persistence++']
-        learning_model_names = [m for m in metrics_df.columns if (m not in baseline_model_name) and (m not in toolkit_model_names)]
+        ABC_model_names = ['Climatology++', 'CFSv2++', 'Persistence++']
+        learning_model_names = [m for m in metrics_df.columns if (m not in baseline_model_name) and (m not in ABC_model_names)]
         print(baseline_model_name)
-        print(toolkit_model_names)
+        print(ABC_model_names)
         print(learning_model_names)
         main_model_name = 'all' if len(learning_model_names)> 1 else learning_model_names[-1]
         
@@ -762,15 +782,20 @@ def plot_toolkit_vs_learner(get_metrics_fh, gt_id_list, horizon_list,
     fig = ax.get_figure()
     #if task.endswith('tmp2m_34w'):
     #    fig.text(0.04, 0.5, '% improvement over mean deb. CFSv2 RMSE', va='center', rotation='vertical')
-    out_file = f"{out_dir}/lineplot_{metric}_{target_dates}_{main_model_name}_{file_str}_{task}.pdf"
+    fig_dir = os.path.join(out_dir, "figures", "lineplots")
+    out_file = f"{fig_dir}/lineplot_{metric}_{target_dates}_{main_model_name}_{file_str}_{task}.pdf"
+    make_directories(fig_dir)
     fig.savefig(out_file, bbox_inches='tight')
-    subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
+    set_file_permissions(out_file)
+    printf(f"Figure saved: {out_file}")
+#     subprocess.call("chmod a+w "+out_file, shell=True)
+#     subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
+    pri
 
     plt.show()        
-
+ 
     
-def plot_toolkit_vs_learner_quadruple(get_metrics_fh, gt_id_list, horizon_list, metric, target_dates, model_names, file_str):
+def plot_ABC_vs_learner_quadruple(get_metrics_fh, gt_id_list, horizon_list, metric, target_dates, model_names, file_str):
     
     # set tasks and model names
     tasks = [f"{gt_id}_{horizon}" for gt_id, horizon in product(gt_id_list, horizon_list)]
@@ -819,11 +844,11 @@ def plot_toolkit_vs_learner_quadruple(get_metrics_fh, gt_id_list, horizon_list, 
 
         
         baseline_model_name = ['Debiased CFSv2']
-        toolkit_model_names = ['Climatology++', 'CFSv2++', 'Persistence++']
-        learning_model_names = [m for m in metrics_df.columns if (m not in baseline_model_name) and (m not in toolkit_model_names)]
+        ABC_model_names = ['Climatology++', 'CFSv2++', 'Persistence++']
+        learning_model_names = [m for m in metrics_df.columns if (m not in baseline_model_name) and (m not in ABC_model_names)]
         if i==0:
             print(baseline_model_name)
-            print(toolkit_model_names)
+            print(ABC_model_names)
             print(learning_model_names)
         main_model_name = 'all' if len(learning_model_names)> 1 else learning_model_names[-1]
         
@@ -906,8 +931,11 @@ def plot_toolkit_vs_learner_quadruple(get_metrics_fh, gt_id_list, horizon_list, 
     fig_title = f"{metric.replace('skill','Skill').replace('rmse','RMSE improvement')} by {period_str}"
     fig.suptitle(f"{fig_title}", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
     #Save figure
-    out_file = f"{out_dir}/lineplot_{metric}_{target_dates}_{main_model_name}_{file_str}.pdf"#pdf"
+    fig_dir = f"{out_dir}/figures/lineplots"
+    make_directories(fig_dir)
+    out_file = f"{fig_dir}/lineplot_{metric}_{target_dates}_{main_model_name}_{file_str}.pdf"#pdf"
     fig.savefig(out_file, bbox_inches='tight')
+    printf(f"Figure saved: {out_file}")
     subprocess.call("chmod a+w "+out_file, shell=True)
     subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
     plt.show() 
@@ -1023,6 +1051,8 @@ def get_trio_df(gt_id='contest_precip', horizon='34w', target_dates='std_contest
     
     tic()    
     for model_name in [m for m in model_names if 'gt' not in m]:
+#         if 'multillr' not in model_name:
+#             continue
         print(f"Calculating anomalies for {model_name}.")
         # Get the selected submodel_name
         if model_name.startswith('online'):
@@ -1058,6 +1088,7 @@ def get_trio_df(gt_id='contest_precip', horizon='34w', target_dates='std_contest
                     pred_date_df['start_date'] = target_date_obj
             except FileNotFoundError as e:
                 print(f'No preds for {model_name} {target_date_str}')
+                printf({sn})
                 continue
                 
             ##print('reading pred_date_df DONE!')
@@ -1145,7 +1176,8 @@ def get_gt_anomalies(gt_id, horizon, target_dates):
         if month_day == (2,29):
             printf('--Using Feb. 28 climatology for Feb. 29')
             month_day = (2,28)
-        anom = gt_d-clim.loc[month_day].rename(columns={var: 'anom_gt'})
+#         print(type(gt_d-clim.loc[month_day]))
+        anom = gt_d-clim.loc[month_day].rename('anom_gt')
         anoms.loc[anom.index, :] =  anom
         
     anoms = pd.merge(anoms, gt, left_index=True, right_index=True).rename(columns={var: 'pred_gt'}).astype(float)
@@ -1898,10 +1930,6 @@ def plot_models_metrics_preds_line(all_metrics,
     preds_df = preds_df.groupby(['level_0'])[model_names_preds].sum()#.apply(lambda x: x/10000)
     preds_df = preds_df[[m for m in model_names_sorted if m in preds_df.columns]]
     preds_df.columns = preds_df.columns.to_series().map(all_model_names)#.apply(lambda x: 1/x)
-
-    ## Clip data to zero
-    #metrics_df = metrics_df.clip(0)
-    #preds_df = preds_df.clip(0)
     
     markers = [m for m in Line2D.markers.keys()][1:]#['o', 's', '^', 'x', '1', 'v', '<', '>']#, '^', 'x', 'o', 'v', 'v']
     colors = CB_color_cycle
@@ -1957,11 +1985,11 @@ def plot_models_metrics_preds_line(all_metrics,
         
     #save figure
     #fig.text(0.04, 0.5, 'Percentage improvement over debiased CFSv2 RMSE', va='center', rotation='vertical')
-    out_file = f"{out_dir}/lineplot_preds_perc_improv_{task}_{target_dates}_{file_str}.pdf"
+    fig_dir = os.path.join(out_dir, 'figures', 'salient')
+    out_file = f"{fig_dir}/lineplot_preds_perc_improv_{task}_{target_dates}_{file_str}.pdf"
+    make_directories(fig_dir)
     fig.savefig(out_file, bbox_inches='tight')
-    subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
-    
+    set_file_permissions(out_file)    
     plt.show()    
     
     
@@ -1980,11 +2008,6 @@ def plot_models_metrics_preds_scatter(all_metrics,
     
     model_names_sorted = model_names
     sns.set(font_scale = 1.5, rc={'figure.figsize':(10,8)})
-    
-    #fig, axs = plt.subplots(len(gt_id_list), 1, figsize=(10,8))
-
-    # Flatten axis for enumeration
-    #axs = axs.flat
 
     # Generate side by side timeline plot and scatter plot
     gt_id = gt_id_list[0]
@@ -2011,10 +2034,6 @@ def plot_models_metrics_preds_scatter(all_metrics,
     preds_df = preds_df.groupby(['level_0'])[model_names_preds].sum()#.apply(lambda x: x/10000)
     preds_df = preds_df[[m for m in model_names_sorted if m in preds_df.columns]]
     preds_df.columns = preds_df.columns.to_series().map(all_model_names)#.apply(lambda x: 1/x)
-
-    ## Clip data to zero
-    #metrics_df = metrics_df.clip(0)
-    #preds_df = preds_df.clip(0)
     
     markers = [m for m in Line2D.markers.keys()][1:]#['o', 's', '^', 'x', '1', 'v', '<', '>']#, '^', 'x', 'o', 'v', 'v']
     colors = CB_color_cycle
@@ -2056,11 +2075,11 @@ def plot_models_metrics_preds_scatter(all_metrics,
         
     #save figure
     #fig.text(0.04, 0.5, 'Percentage improvement over debiased CFSv2 RMSE', va='center', rotation='vertical')
-    out_file = f"{out_dir}/scatterplot_preds_perc_improv_{task}_{target_dates}_{file_str}.pdf"
+    fig_dir = os.path.join(out_dir, "figures", "salient")
+    out_file = f"{fig_dir}/scatterplot_preds_perc_improv_{task}_{target_dates}_{file_str}.pdf"
+    make_directories(fig_dir)
     fig.savefig(out_file, bbox_inches='tight')
-    subprocess.call("chmod a+w "+out_file, shell=True)
-    subprocess.call("chown $USER:sched_mit_hill "+out_file, shell=True)
-    
+    set_file_permissions(out_file)    
     plt.show()   
             
 
@@ -2173,12 +2192,1194 @@ def plot_tuning(gt_ids, horizons, target_dates, model_names):
             y_labels = [item.replace("cfsv2pp-debiasTrue_years12_", "").replace("margin","span = ").replace("_days1-",", dates = ").replace("_leads",", leads = ").replace("_lossmse","") for item in df["selected_submodel"].unique()]
             ax.set_yticklabels(y_labels)
             
+        ax.set_facecolor("white")
+ 
 #        print(f' 5 - MODEL NAME IS {model_name}')
         #SAVE PLOT
-        out_file = os.path.join(plot_folder, f"tuning_{model_name}_{task}_{target_dates}.pdf")  
+        fig_dir = os.path.join(out_dir, "figures", "tuning_plots")
+        make_directories(fig_dir)
+        out_file = os.path.join(fig_dir, f"tuning_{model_name}_{task}_{target_dates}.pdf")  
         plt.savefig(out_file, bbox_inches='tight')
         print(f"Figure saved: {out_file}\n")
         #fig.clear()
         #plt.close(fig)
 #        toc()
+
+
+
+#*****************************************************************************************************************************************
+# MAP FIGURES #*****************************************************************************************************************************************
+
+
+def get_models_metric_lat_lon(gt_id='us_precip', horizon='56w', target_dates='std_paper', metrics = ['skill'], model_names=['cfsv2pp'],
+                             first_target_date = False):
+    
+    if first_target_date: 
+        first_target_dates = {"gt": "20180101",
+                                "raw_cfsv2": "20180101",
+                                "raw_ecmwf": "20180102",
+                                "raw_ccsm4": "20180101", 
+                                "raw_geos_v2p1": "20180101",
+                                "raw_nesm": "20180101",
+                                "raw_fimr1p1": "20180104",
+                                "raw_gefs": "20180104",
+                                "raw_gem": "20180105"}
+    
+    
+    task = f'{gt_id}_{horizon}'
+    metric_dfs = {}    
+    #Create empty metric dataframe to be populated
+    for metric in metrics:
+        # Index by target dates
+        metric_dfs[metric] = pd.DataFrame(columns=model_names, dtype=np.float64)
+        for i, model_name in enumerate(model_names):
+            if horizon == '56w' and model_name in ['raw_fimr1p1', 'raw_gefs', 'raw_gem',
+                                                  'abc_fimr1p1', 'abc_gefs', 'abc_gem']:
+                continue
+            if first_target_date:
+                target_dates =  first_target_dates[model_name]
+#                 printf(f"{model_name} using target date {target_dates}")
+            submodel_name = model_name if model_name=='gt' else get_selected_submodel_name(model=model_name, gt_id=gt_id, horizon=horizon)
+            filename = os.path.join("eval", "metrics", model_name, "submodel_forecasts", submodel_name, task, f"{metric}-{task}-{target_dates}.h5")
+            if os.path.isfile(filename):
+                if first_target_date:
+                    printf(f"Processing {model_name} using target date {target_dates}")
+                else:
+                    printf(f"Processing {model_name}")
+                df = pd.read_hdf(filename).rename(columns={metric:model_name})
+                df = df.set_index(['lat','lon']) if 'lat_lon' in metric else df.set_index(['start_date'])
+                if i==0:
+                    metric_dfs[metric] = df
+                else:
+                    metric_dfs[metric][model_name] = df[model_name]
+            else:
+                printf(f"Warning! Missing model {model_name}")
+
+        printf(f'-DONE!')
+
+    return metric_dfs
+
+
+
+
+
+
+def pivot_model_output(df_models, model_name="climpp"):
+    """Returns pivoted dataframe to be used to plot 2d (lat, lon) map, for a given model output.
+    
+    , True if all prediction dataframes exist and are of length equal to 514 (i.e., number of contest grid cells)
+        for all model names, given a gt_id and target_horizon and target_date.
+    
+    Args:
+      df_models_output: dataframe containing outputs (e.g., predictions, errors, etc) of one or more models
+      model_name: string model name
+      map_id: type of output to be plotted on a map ("error", "pred" or "best")
+    """
+    data = df_models[['lat', 'lon', f"{model_name}"]]
+    data_pivot = data.pivot(index='lat', columns='lon', values=f"{model_name}")
+    data_matrix = data_pivot.values
+    data_matrix = np.ma.masked_invalid(data_matrix)   
+    return data_matrix
+
+def format_df_models(df_models, model_names):
+    #Skip missing model names
+    model_names_or = model_names
+   
+    missing_models = [m for m in model_names if m not in df_models.columns]
+    model_names = [m for m in model_names if m not in missing_models]
+
+    df_models = df_models.reset_index()
+    if 'lat' not in df_models.columns and 'lon' not in df_models.columns:
+        df_models[['lat', 'lon']] = pd.DataFrame(df_models['level_1'].tolist())
+        df_models = df_models.rename(columns={'level_0': 'period_group'})
+        df_models.drop(columns=['level_1'], inplace=True)
+        
+    #Convert longitude and delete duplicate lat, lon columns              
+    df_models = df_models.loc[:,~df_models.columns.duplicated()]
+    
+    #sort model names list
+    model_names = [m for m in model_names_or if m in model_names]
+    
+    return df_models, model_names
+
+
+def get_plot_params_horizontal(subplots_num=1):
+    if subplots_num in [1]:
+        plot_params = {'nrows': 2, 'ncols': 1, 'height_ratios': [20, 1], 'width_ratios': [20], 
+                       'figsize_x': 4,'figsize_y':6, 'fontsize_title': 10, 'fontsize_suptitle': 10, 'fontsize_ticks': 10, 
+                       'y_sup_title':1.02, 'y_sup_fontsize':10} 
+    elif subplots_num in [2]:
+        plot_params = {'nrows': 2, 'ncols': 2, 'height_ratios': [20, 10], 'width_ratios': [20, 20], 
+                       'figsize_x': 3.5,'figsize_y':1.2, 'fontsize_title': 10, 'fontsize_suptitle': 10, 'fontsize_ticks': 10, 
+                       'y_sup_title':1.08, 'y_sup_fontsize':10}   
+    elif subplots_num in [3]:
+        plot_params = {'nrows': 2, 'ncols': 3, 'height_ratios': [15, 10], 'width_ratios': [30, 30, 30], 
+                       'figsize_x': 5.5,'figsize_y': 0.8, 'fontsize_title': 10, 'fontsize_suptitle': 12, 'fontsize_ticks': 10, 
+                       'y_sup_title':1.1, 'y_sup_fontsize':12} 
+    elif subplots_num in [4]:
+        plot_params = {'nrows': 2, 'ncols': 4, 'height_ratios': [15, 10], 'width_ratios': [30, 30, 30, 30], 
+                       'figsize_x':8.5,'figsize_y': 0.8, 'fontsize_title': 10, 'fontsize_suptitle': 12, 'fontsize_ticks': 10, 
+                       'y_sup_title':1.1, 'y_sup_fontsize':12}   
+    elif subplots_num in [6]:
+        plot_params = {'nrows': 3, 'ncols': 3, 'height_ratios': [20, 20, 20, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 6,'figsize_y': 3, 'fontsize_title': 30, 'fontsize_suptitle': 30, 'fontsize_ticks': 30, 
+                       'y_sup_title':1.05, 'y_sup_fontsize':30}
+    elif subplots_num in [7, 9]:
+        plot_params = {'nrows': 4, 'ncols': 3, 'height_ratios': [30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 2,'figsize_y': 2, 'fontsize_title': 12, 'fontsize_suptitle': 14, 'fontsize_ticks': 6, 
+                       'y_sup_title':1, 'y_sup_fontsize':16}
+    elif subplots_num in [12]:
+        plot_params = {'nrows': 5, 'ncols': 3, 'height_ratios': [30, 30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 2,'figsize_y': 3.25, 'fontsize_title': 15, 'fontsize_suptitle': 17, 'fontsize_ticks': 9, 
+                       'y_sup_title':0.97, 'y_sup_fontsize':19}  
+    elif subplots_num in [21]:
+        plot_params = {'nrows': 8, 'ncols': 3, 'height_ratios': [12, 12, 12, 12, 12, 12, 12, 0.05], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 3,'figsize_y': 15, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.915, 'y_sup_fontsize':20}
+    return plot_params
+
+def get_plot_params_vertical(subplots_num=1):
+    if subplots_num in [1]:
+        plot_params = {'nrows': 2, 'ncols': 1, 'height_ratios': [20, 1], 'width_ratios': [20], 
+                       'figsize_x': 4,'figsize_y':6, 'fontsize_title': 10, 'fontsize_suptitle': 10, 'fontsize_ticks': 10, 
+                       'y_sup_title':1.02, 'y_sup_fontsize':10} 
+    elif subplots_num in [2]:
+        plot_params = {'nrows': 3, 'ncols': 1, 'height_ratios': [20, 20, 1], 'width_ratios': [20], 
+                       'figsize_x': 1.15,'figsize_y':5.5, 'fontsize_title': 10, 'fontsize_suptitle': 10, 'fontsize_ticks': 10, 
+                       'y_sup_title':1.02, 'y_sup_fontsize':10}   
+    elif subplots_num in [3]:
+        plot_params = {'nrows': 4, 'ncols': 1, 'height_ratios': [30, 30, 30, 0.1], 'width_ratios': [20], 
+                       'figsize_x': 1,'figsize_y': 9, 'fontsize_title': 12, 'fontsize_suptitle': 12, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.99, 'y_sup_fontsize':12}    
+    elif subplots_num in [4]:
+        plot_params = {'nrows': 3, 'ncols': 2, 'height_ratios': [20, 20, 0.1], 'width_ratios': [20, 20], 
+                       'figsize_x': 4,'figsize_y': 5, 'fontsize_title': 16, 'fontsize_suptitle': 18, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.99, 'y_sup_fontsize':18}
+    elif subplots_num in [5]:
+        plot_params = {'nrows': 2, 'ncols': 6, 'height_ratios': [20,20], 'width_ratios': [10, 10, 10, 10, 10, 0.1], 
+                       'figsize_x': 15,'figsize_y': 1, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.915, 'y_sup_fontsize':20}
+    elif subplots_num in [6]:
+        plot_params = {'nrows': 3, 'ncols': 3, 'height_ratios': [20, 20, 20, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 6,'figsize_y': 3, 'fontsize_title': 24, 'fontsize_suptitle': 24, 'fontsize_ticks': 16, 
+                       'y_sup_title':1.02, 'y_sup_fontsize':26}
+    elif subplots_num in [7, 9]:
+        plot_params = {'nrows': 4, 'ncols': 3, 'height_ratios': [30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 2,'figsize_y': 2, 'fontsize_title': 12, 'fontsize_suptitle': 14, 'fontsize_ticks': 6, 
+                       'y_sup_title':1, 'y_sup_fontsize':16}
+    elif subplots_num in [10]:
+        plot_params = {'nrows': 3, 'ncols': 5, 'height_ratios': [20, 20, 0.1], 'width_ratios': [20, 20, 20, 20, 20], 
+                       'figsize_x': 7,'figsize_y': 1.25, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.95, 'y_sup_fontsize':20}
+    elif subplots_num in [12]:
+        plot_params = {'nrows': 5, 'ncols': 3, 'height_ratios': [30, 30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 2,'figsize_y': 3.25, 'fontsize_title': 15, 'fontsize_suptitle': 17, 'fontsize_ticks': 9, 
+                       'y_sup_title':0.97, 'y_sup_fontsize':19}
+    elif subplots_num in [15, 18]:
+        plot_params = {'nrows': 7, 'ncols': 3, 'height_ratios': [10, 10, 10, 10, 10, 10, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 3,'figsize_y': 10, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.915, 'y_sup_fontsize':20}
+    elif subplots_num in [21]:
+        plot_params = {'nrows': 8, 'ncols': 3, 'height_ratios': [12, 12, 12, 12, 12, 12, 12, 0.05], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 3,'figsize_y': 15, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.915, 'y_sup_fontsize':20}
+    return plot_params
+
+
+color_map_str = 'PiYG'
+color_map_str_anom = 'bwr'
+cmap_name = 'cb_friendly'
+cb_skip = 5
+color_dic = {}
+color_dic[('skill','precip', '12w')] = {'colorbar_min_value': 15, 'colorbar_max_value': 85, 
+                   'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('skill','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                                        
+color_dic[('skill','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('skill','tmp2m', '12w')] = {'colorbar_min_value': 65, 'colorbar_max_value': 85, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('skill','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('skill','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_skill','precip', '12w')] = {'colorbar_min_value': 15, 'colorbar_max_value': 85, 
+                   'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_skill','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                       
+color_dic[('lat_lon_skill','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('lat_lon_skill','tmp2m', '12w')] = {'colorbar_min_value': 65, 'colorbar_max_value': 85, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_skill','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_skill','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_pred','precip', '12w')] = {'colorbar_min_value': 15, 'colorbar_max_value': 85, 
+                   'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_pred','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                       
+color_dic[('lat_lon_pred','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('lat_lon_pred','tmp2m', '12w')] = {'colorbar_min_value': 65, 'colorbar_max_value': 85, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_pred','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_pred','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_error','precip', '12w')] = {'colorbar_min_value': 15, 'colorbar_max_value': 85, 
+                   'color_map_str': color_map_str_anom, 'cb_skip': 5,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_error','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                       
+color_dic[('lat_lon_error','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 5,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('lat_lon_error','tmp2m', '12w')] = {'colorbar_min_value': 65, 'colorbar_max_value': 85, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_error','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_error','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_rmse','precip', '12w')] = {'colorbar_min_value': 15, 'colorbar_max_value': 85, 
+                   'color_map_str': color_map_str_anom, 'cb_skip': 5,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_rmse','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                       
+color_dic[('lat_lon_rmse','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 5,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('lat_lon_rmse','tmp2m', '12w')] = {'colorbar_min_value': 65, 'colorbar_max_value': 85, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_rmse','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_rmse','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_anom','precip', '12w')] = {'colorbar_min_value': 15, 'colorbar_max_value': 85, 
+                   'color_map_str': color_map_str_anom, 'cb_skip': 5,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_anom','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 10,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                       
+color_dic[('lat_lon_anom','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 5,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('lat_lon_anom','tmp2m', '12w')] = {'colorbar_min_value': 65, 'colorbar_max_value': 85, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_anom','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_anom','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str_anom, 'cb_skip': 2,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+
+color_dic[('lat_lon_rpss','precip', '12w')] = {'colorbar_min_value': 15, 'colorbar_max_value': 85, 
+                   'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_rpss','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                       
+color_dic[('lat_lon_rpss','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('lat_lon_rpss','tmp2m', '12w')] = {'colorbar_min_value': 65, 'colorbar_max_value': 85, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_rpss','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_rpss','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 50, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_crps','precip', '12w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                   'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["#yellow", "#orange", "mediumorchid", "indigo", "lightgreen", "darkgreen"],
+                   'CB_colors': ["#dede00", "#ff7f00", "mediumorchid", "indigo", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_crps','precip', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                    'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}
+                       
+color_dic[('lat_lon_crps','precip', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}                                       
+
+color_dic[('lat_lon_crps','tmp2m', '12w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["purple", "lightgreen", "darkgreen"],
+                   'CB_colors': ["purple", "lightgreen", "darkgreen"]}
+
+color_dic[('lat_lon_crps','tmp2m', '34w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+color_dic[('lat_lon_crps','tmp2m', '56w')] = {'colorbar_min_value': 0, 'colorbar_max_value': 15, 
+                                'color_map_str': color_map_str, 'cb_skip': 0.1,
+                   'CB_colors_names':["white", "#yellow", "#orange", "blueviolet", "indigo"],
+                   'CB_colors': ["white", "#dede00", "#ff7f00", "blueviolet", "indigo"]}  
+
+
+def plot_metric_maps(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=None, show=True, scale_type='linear', CB_colors_customized=[], CB_minmax=[], CB_skip=None, feature=None, bin_str=None, source_data=False, source_data_filename="fig_source_data"):
+    
+    if (scale_type=="linear") and (CB_colors_customized!=[]) and (CB_minmax!=[]):
+        plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=mean_metric_df, show=show, scale_type=scale_type, CB_colors_customized=CB_colors_customized, CB_minmax=CB_minmax, CB_skip=CB_skip, feature=feature, bin_str=bin_str, source_data=source_data, source_data_filename=source_data_filename)
+    
+    elif scale_type=='linear':
+        plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, mean_metric_df=mean_metric_df, show=show, scale_type=scale_type, CB_colors_customized=[], CB_skip=CB_skip, feature=feature, bin_str=bin_str, source_data=source_data, source_data_filename=source_data_filename)
+        
+        
+def plot_metric_maps_base(metric_dfs, model_names, gt_ids, horizons, metric, target_dates, 
+                          mean_metric_df=None, show=True, scale_type="linear", 
+                          CB_colors_customized=None, CB_minmax=[], CB_skip = None, 
+                          feature=None, bin_str=None,
+                          source_data=False, source_data_filename = "fig_source_data"):
+    
+    #Make figure with compared models plots
+    tasks = [f"{t[0]}_{t[1]}" for t in product(gt_ids, horizons)]
+    subplots_num = len(model_names) #* len(tasks)
+    if ('error' in metric) or (feature is not None):
+        params =  get_plot_params_horizontal(subplots_num=subplots_num)
+    else:
+        params =  get_plot_params_vertical(subplots_num=subplots_num)
+    nrows, ncols = params['nrows'], params['ncols']
+
+    #Set properties common to all subplots
+    fig = plt.figure(figsize=(nrows*params['figsize_x'], ncols*params['figsize_y']))
+    gs = GridSpec(nrows=nrows-1, ncols=ncols, width_ratios=params['width_ratios']) 
+
+    # Create latitude, longitude list, model data is not yet used
+    df_models = metric_dfs[tasks[0]][metric]
+    df_models, model_names = format_df_models(df_models, model_names)
+    data_matrix = pivot_model_output(df_models, model_name=model_names[0])
+    
+
+    # Get grid edges for each latitude, longitude coordinate
+    if '1.5' in tasks[0]:
+        lats = np.linspace(25.5, 48, data_matrix.shape[0])
+        lons = np.linspace(-123, -67.5, data_matrix.shape[1])
+    elif 'us' in tasks[0]:
+        lats = np.linspace(27, 49, data_matrix.shape[0])
+        lons = np.linspace(-124, -68, data_matrix.shape[1])
+    elif 'contest' in tasks[0]:
+        lats = np.linspace(27, 49, data_matrix.shape[0])
+        lons = np.linspace(-124, -94, data_matrix.shape[1])
+
+    if '1.5' in tasks[0]:
+        lats_edges = np.asarray(list(np.arange(lats[0], lats[-1]+1.5, 1.5))) - 0.75
+        lons_edges = np.asarray(list(np.arange(lons[0], lons[-1]+1.5, 1.5))) - 0.75
+        lat_grid, lon_grid = np.meshgrid(lats_edges,lons_edges)
+    else:
+        lats_edges = np.asarray(list(range(int(lats[0]), (int(lats[-1])+1)+1))) - 0.5
+        lons_edges = np.asarray(list(range(int(lons[0]), (int(lons[-1])+1)+1))) - 0.5
+        lat_grid, lon_grid = np.meshgrid(lats_edges,lons_edges)
+    
+    
+    for i, xy in enumerate(product(model_names, tasks)):
+        if i >= subplots_num:
+            break
+            
+        model_name, task = xy[0], xy[1]
+        if (feature is not None) and (bin_str is not None):
+            x, y = tasks.index(task), model_names.index(model_name)
+        else:
+            x, y = model_names.index(model_name), tasks.index(task)
+            
+        ax = fig.add_subplot(gs[x,y], projection=ccrs.PlateCarree(), aspect="auto")
+        ax.set_facecolor('w')
+        ax.axis('off')
+        
+        df_models = metric_dfs[task][metric]
+        if 'skill' in metric:
+            df_models =df_models.apply(lambda x: x*100)  
+        
+        df_models, model_names = format_df_models(df_models, model_names)  
+        
+        data_matrix = pivot_model_output(df_models, model_name=model_name)
+
+        ax.coastlines(linewidth=0.3, color='gray')
+        ax.add_feature(cfeature.STATES.with_scale('110m'), edgecolor='gray', linewidth=0.05, linestyle=':', zorder=10)
+
+
+        # Set color parameters
+        gt_id, horizon = task[:-4], task[-3:]
+        gt_var = "tmp2m" if "tmp2m" in gt_id else "precip" 
+        if CB_minmax == []:
+            colorbar_min_value = color_dic[(metric, gt_var, horizon)]['colorbar_min_value'] 
+            colorbar_max_value = color_dic[(metric, gt_var, horizon)]['colorbar_max_value'] 
+        else:
+            colorbar_min_value = CB_minmax[0]
+            colorbar_max_value = CB_minmax[1]
+        
+        color_map_str = color_dic[(metric, gt_var, horizon)]['color_map_str'] 
+
+        
+        if CB_colors_customized is not None:
+            if CB_colors_customized == []:
+                cmap = LinearSegmentedColormap.from_list(cmap_name, color_dic[(metric, gt_var, horizon)]['CB_colors'] , N=100)
+            else:
+                #customized cmap
+                cmap = LinearSegmentedColormap.from_list(cmap_name, CB_colors_customized, N=100)
+            color_map = matplotlib.cm.get_cmap(cmap) 
+            plot = ax.pcolormesh(lon_grid,lat_grid, np.transpose(data_matrix),
+                         vmin=colorbar_min_value, vmax=colorbar_max_value,
+                         cmap=color_map, rasterized=True)
+        else:
+            color_map = matplotlib.cm.get_cmap(color_map_str)      
+            plot = ax.pcolormesh(lon_grid,lat_grid, np.transpose(data_matrix),
+                                 vmin=colorbar_min_value, vmax=colorbar_max_value,
+                                 cmap=color_map, rasterized=True)
+        ax.tick_params(axis='both', labelsize=params['fontsize_ticks'])
+        
+        if mean_metric_df is not None:
+            if 'skill' in metric:
+                df_mean_metric = mean_metric_df[task]['skill'].apply(lambda x: x*100)
+                mean_metric = round(df_mean_metric[model_name].mean(), 2)
+            elif 'lat_lon_anom' in metric:
+                df_mean_metric = mean_metric_df
+                mean_metric = '' if model_name =='gt' else int(df_mean_metric[model_name].mean()) 
+            else:
+                df_mean_metric = mean_metric_df[task][metric]
+                mean_metric = '' if model_name =='gt' else round(df_mean_metric[model_name].mean(), 2) 
+        elif metric == 'lat_lon_anom' and 'lat_lon_skill' in metric_dfs[task].keys():
+            df_mean_metric = metric_dfs[task]['lat_lon_skill'].apply(lambda x: x*100)
+            df_mean_metric, model_names = format_df_models(df_mean_metric, model_names)
+            mean_metric = int(df_mean_metric[model_name].mean())
+        else:
+            df_mean_metric = df_models
+            mean_metric = ''  
+      
+    
+        # SET SUBPLOT TITLES******************************************************************************************
+        
+        
+        mean_metric_title = f"{mean_metric}%" if 'skill' in metric else str(mean_metric)
+        if (feature is not None) and (bin_str is not None):
+            if x == 0 and y==0:
+                ax.text(0.005, 0.55, all_model_names[model_name], va='bottom', ha='center',
+                        rotation='vertical', rotation_mode='anchor',
+                        transform=ax.transAxes, fontsize = params['fontsize_title'], fontweight="bold")
+            elif x == 0 and y>=1:
+                ax.set_title(f"Skill: {mean_metric_title}%", fontsize = params['fontsize_title'],fontweight="bold")
+                ax.text(0.005, 0.55, all_model_names[model_name], va='bottom', ha='center',
+                        rotation='vertical', rotation_mode='anchor',
+                        transform=ax.transAxes, fontsize = params['fontsize_title'], fontweight="bold")
+            elif y>=1:
+                ax.set_title(f"{mean_metric_title}", fontsize = params['fontsize_title'],fontweight="bold")
+        else:
+            if x == 0:
+                column_title = horizon.replace('12w', 'Weeks 1-2').replace('34w', 'Weeks 3-4'). replace('56w', 'Weeks 5-6')
+                mean_metric_title = '' if 'lat_lon_anom' in metric else mean_metric_title
+                ax.set_title(f"{column_title}\n{mean_metric_title}", fontsize = params['fontsize_title'],fontweight="bold")
+            else:
+                ax.set_title(f"{mean_metric_title}", fontsize = params['fontsize_title'],fontweight="bold")
+            if y == 0:
+                ax.text(0.005, 0.55, all_model_names[model_name], va='bottom', ha='center',
+                        rotation='vertical', rotation_mode='anchor',
+                        transform=ax.transAxes, fontsize = params['fontsize_title'], fontweight="bold")
+
+        #Add colorbar        
+        if CB_minmax != []:
+            if  i == subplots_num-1:                
+                #Add colorbar for weeks 3-4 and 5-6
+                cb_ax = fig.add_axes([0.2, 0.08, 0.6, 0.02])
+                if CB_colors_customized is not None:
+                    cb = fig.colorbar(plot, cax=cb_ax, cmap=cmap, orientation='horizontal')
+                else:
+                    cb = fig.colorbar(plot, cax=cb_ax, orientation='horizontal')
+                cb.outline.set_edgecolor('black')
+                cb.ax.tick_params(labelsize=params['fontsize_ticks']) 
+                if metric == 'lat_lon_error':
+                    cbar_title = 'model bias (mm)' if 'precip' in gt_id else 'model bias ($^\degree$C)'
+                elif metric == 'lat_lon_anom':
+                    cbar_title = f"{gt_var.replace('precip','Precipitation').replace('tmp2m','Temperature')} anomalies"
+                elif 'skill' in metric:
+                    cbar_title = 'Skill (%)'
+                else:
+                    cbar_title = metric
+                cb.ax.set_xlabel(cbar_title, fontsize=params['fontsize_title'], weight='bold')
+                
+                if "linear" in scale_type:
+                    cb_skip = color_dic[(metric, gt_var, horizon)]['cb_skip'] if CB_skip is None else CB_skip
+                    if metric in ['lat_lon_rpss', 'lat_lon_crps']:
+                        cb_range = np.linspace(colorbar_min_value,colorbar_max_value,int(1+(colorbar_max_value-colorbar_min_value)/cb_skip))
+                        cb_ticklabels = [f'{round(tick,1)}' for tick in cb_range]
+                    elif metric in ["lat_lon_skill", "skill"]:
+                        cb_range = range(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip)
+                        cb_ticklabels = [f'{tick}' for tick in cb_range]
+                        cb_ticklabels[0] = u'≤0'
+                    else:
+                        cb_range = range(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip)
+                        cb_ticklabels = [f'{tick}' for tick in cb_range]
+                    cb.set_ticks(cb_range)
+                    cb.ax.set_xticklabels(cb_ticklabels, fontsize=params['fontsize_title'], weight='bold')       
+
+
+    #set figure superior title             
+    target_dates_objs = get_target_dates(target_dates)
+    target_dates_str = datetime.strftime(target_dates_objs[0], '%Y-%m-%d')
+    
+    if (feature is not None) and (bin_str is not None):
+        fig_title = f"Forecast with largest {get_feature_name(feature)} impact in {bin_str}: {target_dates_str}"
+        if feature.startswith('phase_'):
+            fig_title = fig_title.replace('decile','phase')
+        fig.suptitle(f"{fig_title}\n", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
+    else:         
+            fig_title = gt_ids[0].replace('_', ' ').replace('tmp2m', 'Temperature').replace('precip', 'Precipitation').replace('us', '').replace('1.5x1.5','').replace(' ', '')
+            if target_dates.startswith('2'):
+                fig.suptitle(f"{fig_title} {target_dates_str}", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
+            else:
+                fig.suptitle(f"{fig_title}\n", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
+    
+        
+    #Save figure
+    fig = ax.get_figure()
+    model_names_str = '-'.join(model_names)
+    if (feature is not None) and (bin_str is not None):
+        out_dir_fig = os.path.join(out_dir, "date_maps")
+        out_file = os.path.join(out_dir_fig, f"{metric}_{target_dates}_{gt_id}_n{subplots_num}_{model_names_str}_{feature}.pdf") 
+    else:
+        out_dir_fig = os.path.join(out_dir, "maps")
+        out_file = os.path.join(out_dir_fig, f"{metric}_{target_dates}_{gt_id}_n{subplots_num}_{model_names_str}.pdf") 
+    make_directories(out_dir_fig)
+    fig.savefig(out_file, orientation = 'landscape', bbox_inches='tight')
+    subprocess.call("chmod a+w "+out_file, shell=True)
+    print(f"\nFigure saved: {out_file}\n")
+    
+        
+    if source_data:
+        #Save Figure source data  
+        fig_filename = os.path.join(source_data_dir, source_data_filename)    
+        for gt_id, horizon in product(gt_ids, horizons):
+            task = f"{gt_id}_{horizon}"
+            printf(f"Source data for horizon {horizon} saved: {fig_filename}")
+            if os.path.isfile(fig_filename):
+                with pd.ExcelWriter(fig_filename, engine="openpyxl", mode='a') as writer:  
+                    metric_dfs[task][metric].to_excel(writer, sheet_name=task, na_rep="NaN") 
+            else:
+                with pd.ExcelWriter(fig_filename, engine="openpyxl") as writer:  
+                    metric_dfs[task][metric].to_excel(writer, sheet_name=task, na_rep="NaN")         
+        
+    if show is False:
+        fig.clear()
+        plt.close(fig)  
+
+
+
+
+
+def plot_metric_maps_task(metric_dfs,
+                            model_names,
+                            gt_ids,
+                            horizons,
+                            metric,
+                            target_dates,
+                            mean_metric_df=None,
+                            show=True,
+                            scale_type='linear',
+                            CB_colors_customized=["white", "#dede00", "#ff7f00", "blueviolet", "indigo", "yellowgreen", "lightgreen", "darkgreen"],
+                            CB_minmax = (-20, 20),
+                            CB_skip = None,
+                            feature=None,
+                            bin_str=None,
+                            source_data=False ,
+                            source_data_filename = "fig_source_data"):
+
+    #Make figure with compared models plots
+    #set figure superior title             
+    target_dates_objs = get_target_dates(target_dates)
+    target_dates_str = datetime.strftime(target_dates_objs[0], '%Y-%m-%d')
+
+    tasks = [f"{t[0]}_{t[1]}" for t in product(gt_ids, horizons)]
+    subplots_num = len(model_names) #* len(tasks)
+    printf(f"subplots_num: {subplots_num}")
+    if ('error' in metric) or (feature is not None):
+        printf("get_plot_params_horizontal")
+        params =  get_plot_params_horizontal(subplots_num=subplots_num)
+    else:
+        printf("get_plot_params_vertical")
+        params =  get_plot_params_vertical(subplots_num=subplots_num)
+    nrows, ncols = params['nrows'], params['ncols']
+
+    #Set properties common to all subplots
+    fig = plt.figure(figsize=(nrows*params['figsize_x'], ncols*params['figsize_y']))
+    gs = GridSpec(nrows=nrows-1, ncols=ncols, width_ratios=params['width_ratios']) 
+
+    # Create latitude, longitude list, model data is not yet used
+    df_models = metric_dfs[tasks[0]][metric]
+    df_models, model_names = format_df_models(df_models, model_names)
+    data_matrix = pivot_model_output(df_models, model_name=model_names[0])
+
+    # Get grid edges for each latitude, longitude coordinate
+    if '1.5' in tasks[0]:
+        lats = np.linspace(25.5, 48, data_matrix.shape[0])
+        lons = np.linspace(-123, -67.5, data_matrix.shape[1])
+    elif 'us' in tasks[0]:
+        lats = np.linspace(27, 49, data_matrix.shape[0])
+        lons = np.linspace(-124, -68, data_matrix.shape[1])
+    elif 'contest' in tasks[0]:
+        lats = np.linspace(27, 49, data_matrix.shape[0])
+        lons = np.linspace(-124, -94, data_matrix.shape[1])
+
+    if '1.5' in tasks[0]:
+        lats_edges = np.asarray(list(np.arange(lats[0], lats[-1]+1.5, 1.5))) - 0.75
+        lons_edges = np.asarray(list(np.arange(lons[0], lons[-1]+1.5, 1.5))) - 0.75
+        lat_grid, lon_grid = np.meshgrid(lats_edges,lons_edges)
+    else:
+        lats_edges = np.asarray(list(range(int(lats[0]), (int(lats[-1])+1)+1))) - 0.5
+        lons_edges = np.asarray(list(range(int(lons[0]), (int(lons[-1])+1)+1))) - 0.5
+ 
+        lat_grid, lon_grid = np.meshgrid(lats_edges,lons_edges)
+               
+
+    task = tasks[0]  
+    nrows_list, ncols_list = list(range(nrows)), list(range(ncols))
+#     printf(f"nrows_list: {nrows_list}, ncols_list: {ncols_list}")
+    for i, xy in enumerate(product(nrows_list, ncols_list)):
+        if i >= subplots_num:
+            break
+#         printf(model_names[i])
+        model_name = model_names[i]    
+#         printf(f"i: {i}\nxy: {xy}\nmodel_name: {model_name}\ntask: {task}")
+
+        x, y = xy[0], xy[1]
+
+    #     printf(f"x: {x}\ny: {y}\n\n")
+        ax = fig.add_subplot(gs[x,y], projection=ccrs.PlateCarree(), aspect="auto")
+        ax.set_facecolor('w')
+        ax.axis('off')
+
+        df_models = metric_dfs[task][metric]
+        if 'skill' in metric:
+            df_models =df_models.apply(lambda x: x*100)  
+
+        df_models, model_names = format_df_models(df_models, model_names)  
+
+        data_matrix = pivot_model_output(df_models, model_name=model_name)
+
+        ax.coastlines(linewidth=0.3, color='gray')
+        ax.add_feature(cfeature.STATES.with_scale('110m'), edgecolor='gray', linewidth=0.05, linestyle=':', zorder=10)
+
+        # Set color parameters
+        gt_id, horizon = task[:-4], task[-3:]
+        gt_var = "tmp2m" if "tmp2m" in gt_id else "precip" 
+        if CB_minmax == []:
+            colorbar_min_value = color_dic[(metric, gt_var, horizon)]['colorbar_min_value'] 
+            colorbar_max_value = color_dic[(metric, gt_var, horizon)]['colorbar_max_value'] 
+        else:
+            colorbar_min_value = CB_minmax[0]
+            colorbar_max_value = CB_minmax[1]
+
+        color_map_str = color_dic[(metric, gt_var, horizon)]['color_map_str'] 
+
+        if CB_colors_customized is not None:
+            if CB_colors_customized == []:
+                cmap = LinearSegmentedColormap.from_list(cmap_name, color_dic[(metric, gt_var, horizon)]['CB_colors'] , N=100)
+            else:
+                #customized cmap
+                cmap = LinearSegmentedColormap.from_list(cmap_name, CB_colors_customized, N=100)
+                
+            color_map = matplotlib.cm.get_cmap(cmap) 
+            plot = ax.pcolormesh(lon_grid,lat_grid, np.transpose(data_matrix),
+                         vmin=colorbar_min_value, vmax=colorbar_max_value,
+                         cmap=color_map, rasterized=True)
+        else:
+            color_map = matplotlib.cm.get_cmap(color_map_str) 
+            plot = ax.pcolormesh(lon_grid,lat_grid, np.transpose(data_matrix),
+                                 vmin=colorbar_min_value, vmax=colorbar_max_value,
+                                 cmap=color_map, rasterized=True)
+        ax.tick_params(axis='both', labelsize=params['fontsize_ticks'])
+
+
+
+
+        # SET SUBPLOT TITLES******************************************************************************************
+        ax.set_title(f"{target_dates_str}", fontsize = params['fontsize_title'],fontweight="bold")
+        ax.text(0.005, 0.55, all_model_names[model_name], va='bottom', ha='center',
+                rotation='vertical', rotation_mode='anchor',
+                transform=ax.transAxes, fontsize = params['fontsize_title'], fontweight="bold")
+
+        #Add colorbar        
+        if CB_minmax != []:
+            if  i == subplots_num-1:                
+                #Add colorbar for weeks 3-4 and 5-6
+                cb_ax = fig.add_axes([0.2, 0.08, 0.6, 0.02])
+                if CB_colors_customized is not None:
+                    cb = fig.colorbar(plot, cax=cb_ax, cmap=cmap, orientation='horizontal')
+                else:
+                    cb = fig.colorbar(plot, cax=cb_ax, orientation='horizontal')
+                cb.outline.set_edgecolor('black')
+                cb.ax.tick_params(labelsize=params['fontsize_ticks']) 
+                if metric == 'lat_lon_error':
+                    cbar_title = 'model bias (mm)' if 'precip' in gt_id else 'model bias ($^\degree$C)'
+                elif metric == 'lat_lon_anom':
+                    cbar_title = f"{gt_var.replace('precip','Precipitation').replace('tmp2m','Temperature')} anomalies"
+                elif metric == 'lat_lon_pred':
+                    title_precip, title_temp = 'Precipitation (mm)', 'Temperature ($^\circ$C)'
+                    cbar_title = f"{gt_var.replace('precip',title_precip).replace('tmp2m',title_temp)}"
+                elif 'skill' in metric:
+                    cbar_title = 'Skill (%)'
+                else:
+                    cbar_title = metric
+                cb.ax.set_xlabel(cbar_title, fontsize=params['fontsize_title'], weight='bold')
+
+                if "linear" in scale_type:
+                    cb_skip = color_dic[(metric, gt_var, horizon)]['cb_skip'] if CB_skip is None else CB_skip
+                    if metric in ['lat_lon_rpss', 'lat_lon_crps']:
+                        cb_range = np.linspace(colorbar_min_value,colorbar_max_value,int(1+(colorbar_max_value-colorbar_min_value)/cb_skip))
+                        cb_ticklabels = [f'{round(tick,1)}' for tick in cb_range]
+                    elif metric in ["lat_lon_skill", "skill"]:
+                        cb_range = range(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip)
+                        cb_ticklabels = [f'{tick}' for tick in cb_range]
+                        cb_ticklabels[0] = u'≤0'
+                    else:
+                        cb_range = range(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip)
+                        cb_ticklabels = [f'{tick}' for tick in cb_range]
+                    cb.set_ticks(cb_range)
+                    cb.ax.set_xticklabels(cb_ticklabels, fontsize=params['fontsize_title'], weight='bold')      
+
+
+
+    if (feature is not None) and (bin_str is not None):
+        fig_title = f"Forecast with largest {get_feature_name(feature)} impact in {bin_str}: {target_dates_str}"
+        if feature.startswith('phase_'):
+            fig_title = fig_title.replace('decile','phase')
+        fig.suptitle(f"{fig_title}\n", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
+    else:         
+            fig_title = gt_ids[0].replace('_', '').replace('tmp2m', 'Temperature').replace('precip', 'Precipitation').replace('us', 'U.S. ').replace('1.5x1.5','')
+            if target_dates.startswith('2'):
+                fig.suptitle(f"{fig_title} {target_dates_str}", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
+            else:
+                fig.suptitle(f"{fig_title}\n", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
+
+
+    #Save figure
+    fig = ax.get_figure()
+    model_names_str = '-'.join(model_names)
+    if (feature is not None) and (bin_str is not None):
+        out_dir_fig = os.path.join(out_dir, "figures", "date_maps")
+        out_file = os.path.join(out_dir_fig, f"{metric}_{target_dates}_{gt_id}_n{subplots_num}_{model_names_str}_{feature}.pdf") 
+    else:
+        out_dir_fig = os.path.join(out_dir, "figures", "maps")
+        out_file = os.path.join(out_dir_fig, f"{metric}_{target_dates}_{gt_id}_n{subplots_num}_{model_names_str}.pdf") 
+    make_directories(out_dir_fig)
+    fig.savefig(out_file, orientation = 'landscape', bbox_inches='tight')
+    subprocess.call("chmod a+w "+out_file, shell=True)
+    print(f"\nFigure saved: {out_file}\n")
+
+
+
+def get_plot_params_vertical_ds(subplots_num=1):
+    if subplots_num in [1]:
+        plot_params = {'nrows': 2, 'ncols': 1, 'height_ratios': [20, 1], 'width_ratios': [20], 
+                       'figsize_x': 4,'figsize_y':6, 'fontsize_title': 10, 'fontsize_suptitle': 10, 'fontsize_ticks': 10, 
+                       'y_sup_title':1.02, 'y_sup_fontsize':10} 
+    elif subplots_num in [2]:
+        plot_params = {'nrows': 3, 'ncols': 1, 'height_ratios': [20, 20, 1], 'width_ratios': [20], 
+                       'figsize_x': 1.15,'figsize_y':5.5, 'fontsize_title': 10, 'fontsize_suptitle': 10, 'fontsize_ticks': 10, 
+                       'y_sup_title':1.02, 'y_sup_fontsize':10}   
+#     elif subplots_num in [3]:
+#         plot_params = {'nrows': 4, 'ncols': 1, 'height_ratios': [30, 30, 30, 0.1], 'width_ratios': [20], 
+#                        'figsize_x': 1,'figsize_y': 9, 'fontsize_title': 12, 'fontsize_suptitle': 12, 'fontsize_ticks': 10, 
+#                        'y_sup_title':0.99, 'y_sup_fontsize':12}    
+    elif subplots_num in [3]:
+        plot_params = {'nrows': 2, 'ncols': 4, 'height_ratios': [20], 'width_ratios': [30, 30, 30, 0.1], 
+                       'figsize_x': 8,'figsize_y': 1, 'fontsize_title': 18, 'fontsize_suptitle': 17, 'fontsize_ticks': 18, 
+                       'y_sup_title':1.1, 'y_sup_fontsize':19}    
+#     elif subplots_num in [14, 15]:
+#         plot_params = {'nrows': 5, 'ncols': 4, 'height_ratios': [30, 30, 30, 30, 0.1], 'width_ratios': [20, 20, 20, 20], 
+#                        'figsize_x': 4,'figsize_y':4, 'fontsize_title': 18, 'fontsize_suptitle': 17, 'fontsize_ticks': 18, 
+#                        'y_sup_title':0.95, 'y_sup_fontsize':19}
+    elif subplots_num in [4]:
+        plot_params = {'nrows': 3, 'ncols': 2, 'height_ratios': [20, 20, 0.1], 'width_ratios': [20, 20], 
+                       'figsize_x': 4,'figsize_y': 5, 'fontsize_title': 16, 'fontsize_suptitle': 18, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.99, 'y_sup_fontsize':18}
+    elif subplots_num in [5]:
+        plot_params = {'nrows': 2, 'ncols': 6, 'height_ratios': [20,20], 'width_ratios': [10, 10, 10, 10, 10, 0.1], 
+                       'figsize_x': 15,'figsize_y': 0.75, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 16, 
+                       'y_sup_title':1.07, 'y_sup_fontsize':20}
+    elif subplots_num in [6]:
+        plot_params = {'nrows': 2, 'ncols': 7, 'height_ratios': [20,20], 'width_ratios': [10, 10, 10, 10, 10, 10, 0.1], 
+                       'figsize_x': 20,'figsize_y': 0.75, 'fontsize_title': 24, 'fontsize_suptitle': 24, 'fontsize_ticks': 22, 
+                       'y_sup_title':1.07, 'y_sup_fontsize':24}
+#     elif subplots_num in [6]:
+#         plot_params = {'nrows': 3, 'ncols': 3, 'height_ratios': [20, 20, 20, 0.1], 'width_ratios': [20, 20, 20], 
+#                        'figsize_x': 6,'figsize_y': 3, 'fontsize_title': 24, 'fontsize_suptitle': 24, 'fontsize_ticks': 16, 
+#                        'y_sup_title':1.02, 'y_sup_fontsize':26}
+    elif subplots_num in [7, 9]:
+        plot_params = {'nrows': 4, 'ncols': 3, 'height_ratios': [30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 2,'figsize_y': 2, 'fontsize_title': 12, 'fontsize_suptitle': 14, 'fontsize_ticks': 6, 
+                       'y_sup_title':1, 'y_sup_fontsize':16}
+    elif subplots_num in [10]:
+        plot_params = {'nrows': 3, 'ncols': 5, 'height_ratios': [20, 20, 0.1], 'width_ratios': [20, 20, 20, 20, 20], 
+                       'figsize_x': 7,'figsize_y': 1.25, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.95, 'y_sup_fontsize':20}
+    elif subplots_num in [12]:
+        plot_params = {'nrows': 5, 'ncols': 3, 'height_ratios': [30, 30, 30, 30, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 2,'figsize_y': 3.25, 'fontsize_title': 15, 'fontsize_suptitle': 17, 'fontsize_ticks': 9, 
+                       'y_sup_title':0.97, 'y_sup_fontsize':19}
+    elif subplots_num in [13]:
+        plot_params = {'nrows': 5, 'ncols': 4, 'height_ratios': [30, 30, 30, 30, 0.1], 'width_ratios': [20, 20, 20, 20], 
+                       'figsize_x': 4,'figsize_y':4, 'fontsize_title': 15, 'fontsize_suptitle': 17, 'fontsize_ticks': 15, 
+                       'y_sup_title':0.95, 'y_sup_fontsize':19}
+    elif subplots_num in [14, 15]:
+        plot_params = {'nrows': 5, 'ncols': 4, 'height_ratios': [30, 30, 30, 30, 0.1], 'width_ratios': [20, 20, 20, 20], 
+                       'figsize_x': 4,'figsize_y':4, 'fontsize_title': 18, 'fontsize_suptitle': 17, 'fontsize_ticks': 18, 
+                       'y_sup_title':0.95, 'y_sup_fontsize':19}
+    elif subplots_num in [18]:
+        plot_params = {'nrows': 7, 'ncols': 3, 'height_ratios': [10, 10, 10, 10, 10, 10, 0.1], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 3,'figsize_y': 10, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.915, 'y_sup_fontsize':20}
+    elif subplots_num in [21]:
+        plot_params = {'nrows': 8, 'ncols': 3, 'height_ratios': [12, 12, 12, 12, 12, 12, 12, 0.05], 'width_ratios': [20, 20, 20], 
+                       'figsize_x': 3,'figsize_y': 15, 'fontsize_title': 18, 'fontsize_suptitle': 20, 'fontsize_ticks': 10, 
+                       'y_sup_title':0.915, 'y_sup_fontsize':20}
+    return plot_params
+
+def plot_metric_maps_task_ds(metric_dfs,
+                            model_names,
+                            gt_id,
+                            horizon,
+                            metric,
+                            target_dates,
+                            relative_to=None,
+                            mean_metric_df=None,
+                            show=True,
+                            scale_type='linear',
+                            CB_colors_customized=["white", "#dede00", "#ff7f00", "blueviolet", "indigo", "yellowgreen", "lightgreen", "darkgreen"],
+                            CB_minmax = (-20, 20),
+                            CB_skip = None,
+                            feature=None,
+                            bin_str=None,
+                            source_data=False ,
+                            source_data_filename = "fig_source_data"):
+    #Make figure with compared models plots
+    #set figure superior title             
+    target_dates_objs = get_target_dates(target_dates)
+    target_dates_str = datetime.strftime(target_dates_objs[0], '%Y-%m-%d')
+
+    task = f"{gt_id}_{horizon}"
+    subplots_num = len(model_names) 
+    if relative_to is not None:
+        subplots_num -= 1
+    params =  get_plot_params_vertical_ds(subplots_num=subplots_num)
+    nrows, ncols = params['nrows'], params['ncols']
+#     printf(f"subplots_num: {subplots_num}\nparams:{params}\nnrows: {nrows}\nncols: {ncols}")
+
+    #Set properties common to all subplots
+    fig = plt.figure(figsize=(nrows*params['figsize_x'], ncols*params['figsize_y']))
+    gs = GridSpec(nrows=nrows-1, ncols=ncols, width_ratios=params['width_ratios']) 
+
+    # Create latitude, longitude list, model data is not yet used
+    df_models = metric_dfs[task][metric]
+    df_models, model_names = format_df_models(df_models, model_names)
+#     printf(f"\n\ndf_models:\n{df_models}")
+    data_matrix = pivot_model_output(df_models, model_name=model_names[0])
+#     printf(f"\n\data_matrix:\n{data_matrix}\n\n")
+
+    # Get grid edges for each latitude, longitude coordinate
+    if '1.5' in task:
+        lats = np.linspace(25.5, 48, data_matrix.shape[0])
+        lons = np.linspace(-123, -67.5, data_matrix.shape[1])
+    elif 'us' in task:
+        lats = np.linspace(27, 49, data_matrix.shape[0])
+        lons = np.linspace(-124, -68, data_matrix.shape[1])
+    elif 'contest' in task:
+        lats = np.linspace(27, 49, data_matrix.shape[0])
+        lons = np.linspace(-124, -94, data_matrix.shape[1])
+
+    if '1.5' in task:
+        lats_edges = np.asarray(list(np.arange(lats[0], lats[-1]+1.5, 1.5))) - 0.75
+        lons_edges = np.asarray(list(np.arange(lons[0], lons[-1]+1.5, 1.5))) - 0.75
+        lat_grid, lon_grid = np.meshgrid(lats_edges,lons_edges)
+    else: 
+        lats_edges = np.asarray(list(range(int(lats[0]), (int(lats[-1])+1)+1))) - 0.5
+        lons_edges = np.asarray(list(range(int(lons[0]), (int(lons[-1])+1)))) - 0.5
+
+        lat_grid, lon_grid = np.meshgrid(lats_edges,lons_edges)
+               
+
+ 
+    nrows_list, ncols_list = list(range(nrows)), list(range(ncols))
+#     printf(f"nrows_list: {nrows_list}, ncols_list: {ncols_list}")
+    
+
+    df_models = metric_dfs[task][metric]
+    if 'skill' in metric:
+        df_models =df_models.apply(lambda x: x*100)  
+
+    df_models, model_names = format_df_models(df_models, model_names) 
+    if relative_to is not None:
+#         printf(f"\n\ndf_models:\n{df_models}")
+        df_models[model_names] = df_models[model_names].apply(partial(bss_score, model_names, relative_to), axis=1)
+#         printf(f"\n\ndf_models:\n{df_models}")
+        model_names.remove(relative_to)
+        
+    
+    for i, xy in enumerate(product(nrows_list, ncols_list)):
+        if i >= subplots_num:
+            break
+#         printf(model_names[i])
+        model_name = model_names[i]    
+#         printf(f"i: {i}\nxy: {xy}\nmodel_name: {model_name}\ntask: {task}")
+
+        x, y = xy[0], xy[1]
+        if subplots_num == 14 and x == nrows_list[-2]:
+            y +=1
+            
+#         printf(f"x: {x}, y: {y}")
+        ax = fig.add_subplot(gs[x,y], projection=ccrs.PlateCarree(), aspect="auto")
+        ax.set_facecolor('w')
+        ax.axis('off')
+
+        data_matrix = pivot_model_output(df_models, model_name=model_name)
+
+        ax.coastlines(linewidth=0.3, color='gray')
+        ax.add_feature(cfeature.STATES.with_scale('110m'), edgecolor='gray', linewidth=0.05, linestyle=':', zorder=10)
+
+        # Set color parameters
+        gt_id, horizon = task[:-4], task[-3:]
+        gt_var = "tmp2m" if "tmp2m" in gt_id else "precip" 
+        if CB_minmax == []:
+            colorbar_min_value = color_dic[(metric, gt_var, horizon)]['colorbar_min_value'] 
+            colorbar_max_value = color_dic[(metric, gt_var, horizon)]['colorbar_max_value'] 
+        else:
+            colorbar_min_value = CB_minmax[0]
+            colorbar_max_value = CB_minmax[1]
+
+        color_map_str = color_dic[(metric, gt_var, horizon)]['color_map_str'] 
+
+        if CB_colors_customized is not None:
+            if CB_colors_customized == []:
+                cmap = LinearSegmentedColormap.from_list(cmap_name, color_dic[(metric, gt_var, horizon)]['CB_colors'] , N=100)
+            else:
+                #customized cmap
+                cmap = LinearSegmentedColormap.from_list(cmap_name, CB_colors_customized, N=100)
+                
+            color_map = matplotlib.cm.get_cmap(cmap) 
+            plot = ax.pcolormesh(lon_grid,lat_grid, np.transpose(data_matrix),
+                         vmin=colorbar_min_value, vmax=colorbar_max_value,
+                         cmap=color_map, rasterized=True)
+        else:
+            color_map = matplotlib.cm.get_cmap(color_map_str) 
+            plot = ax.pcolormesh(lon_grid,lat_grid, np.transpose(data_matrix),
+                                 vmin=colorbar_min_value, vmax=colorbar_max_value,
+                                 cmap=color_map, rasterized=True)
+        ax.tick_params(axis='both', labelsize=params['fontsize_ticks'])
+
+
+
+
+        # SET SUBPLOT TITLES******************************************************************************************
+        if relative_to is not None:
+            mean_model_metric = round(df_models[model_name].mean(), 2)
+            ax.set_title(f"{all_model_names[model_name]} ({mean_model_metric}%)", fontsize = params['fontsize_title'],fontweight="bold")
+        else:
+            ax.set_title(f"{all_model_names[model_name]}", fontsize = params['fontsize_title'],fontweight="bold")
+
+        #Add colorbar        
+        if CB_minmax != []:
+            if  i == subplots_num-1:                
+                #Add colorbar for weeks 3-4 and 5-6
+#                 cb_ax = fig.add_axes([0.2, 0.08, 0.6, 0.02])
+                
+                if subplots_num >= 12:
+                    cb_ax = fig.add_axes([0.92, 0.15, 0.008, 0.725])
+                else:
+                    cb_ax = fig.add_axes([0.89, 0.125, 0.008, 0.7])
+                if CB_colors_customized is not None:
+                    cb = fig.colorbar(plot, cax=cb_ax, cmap=cmap, orientation='vertical')
+                else:
+                    cb = fig.colorbar(plot, cax=cb_ax, orientation='vertical')
+                cb.outline.set_edgecolor('black')
+                cb.ax.tick_params(labelsize=params['fontsize_ticks']) 
+                if metric == 'lat_lon_error':
+                    cbar_title = '' #'model bias (mm)' if 'precip' in gt_id else 'model bias ($^\degree$C)'
+                elif metric == 'lat_lon_anom':
+                    cbar_title = f"{gt_var.replace('precip','Precipitation').replace('tmp2m','Temperature')} anomalies"
+                elif metric == 'lat_lon_pred':
+                    title_precip, title_temp = 'Precipitation (mm)', 'Temperature ($^\circ$C)'
+                    cbar_title = f"{gt_var.replace('precip',title_precip).replace('tmp2m',title_temp)}"
+                elif 'skill' in metric:
+                    cbar_title = 'Skill (%)'
+                elif metric == 'lat_lon_rmse':
+                    cbar_title = '' #'RMSE % improvement'
+                else:
+                    cbar_title = metric
+                cb.ax.set_xlabel(cbar_title, fontsize=params['fontsize_title'], weight='bold', labelpad=15)
+
+                if "linear" in scale_type:
+                    cb_skip = color_dic[(metric, gt_var, horizon)]['cb_skip'] if CB_skip is None else CB_skip
+                    if metric in ['lat_lon_rpss', 'lat_lon_crps']:
+                        cb_range = np.linspace(colorbar_min_value,colorbar_max_value,int(1+(colorbar_max_value-colorbar_min_value)/cb_skip))
+                        cb_ticklabels = [f'{round(tick,1)}' for tick in cb_range]
+                    elif metric in ["lat_lon_skill", "skill"]:
+                        cb_range = range(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip)
+                        cb_ticklabels = [f'{tick}' for tick in cb_range]
+                        cb_ticklabels[0] = u'≤0'
+                    else:
+                        cb_range = range(colorbar_min_value, colorbar_max_value+cb_skip, cb_skip)
+                        cb_ticklabels = [f'{tick}%' for tick in cb_range]
+                    cb.set_ticks(cb_range)
+                    cb.ax.set_yticklabels(cb_ticklabels, fontsize=params['fontsize_ticks'], weight='bold') 
+                    cb.ax.tick_params(size=0, pad=10)
+
+
+
+    if (feature is not None) and (bin_str is not None):
+        fig_title = f"Forecast with largest {get_feature_name(feature)} impact in {bin_str}: {target_dates_str}"
+        if feature.startswith('phase_'):
+            fig_title = fig_title.replace('decile','phase')
+        fig.suptitle(f"{fig_title}\n", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
+    else:         
+            fig_title = gt_id.replace('_', '').replace('tmp2m', 'Temperature').replace('precip', 'Precipitation').replace('us', 'U.S. ').replace('1.5x1.5','')
+            fig_title = f"{fig_title}, {horizon.replace('34w','weeks 3-4').replace('56w', 'weeks 5-6').replace('12w','weeks 1-2')}"
+            if target_dates.startswith('2'):
+                fig.suptitle(f"{fig_title} {target_dates_str}", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
+            else:
+                fig.suptitle(f"{fig_title}\n", fontsize=params['y_sup_fontsize'], y=params['y_sup_title'])
+
+
+    #Save figure
+    fig = ax.get_figure()
+    model_names_str = '-'.join(model_names)
+    if (feature is not None) and (bin_str is not None):
+        out_dir_fig = os.path.join(out_dir, "figures", "date_maps")
+        out_file = os.path.join(out_dir_fig, f"{metric}_{target_dates}_{gt_id}_n{subplots_num}_{model_names_str}_{feature}.pdf") 
+    else:
+        out_dir_fig = os.path.join(out_dir, "figures", "maps")
+        out_file = os.path.join(out_dir_fig, f"{metric}_relative_to_{relative_to}_{target_dates}_{gt_id}_{horizon}_n{subplots_num}.pdf")#_{model_names_str}.pdf") 
+    make_directories(out_dir_fig)
+    fig.savefig(out_file, orientation = 'landscape', bbox_inches='tight')
+    set_file_permissions(out_file)
+    subprocess.call("chmod a+w "+out_file, shell=True)
+    print(f"\nFigure saved: {out_file}\n")
+
+
+def simulate_sample_mean(n, mu, sigma):
+    sample = np.random.normal(mu, sigma, size=n)
+    return sample.mean()
+
+def summarize(t, digits=2):
+    table = pd.DataFrame(columns=['Estimate', 'SE', 'CI95'])
+    est = np.mean(t).round(digits)
+    SE = np.std(t).round(digits)
+    CI90 = np.percentile(t, [0, 95]).round(digits)
+    table.loc[''] = est, SE, CI90
+    return table
+
+
 
