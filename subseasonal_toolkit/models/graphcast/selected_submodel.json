@@ -1,0 +1,23 @@
+{
+  "us_tmp2m_34w":
+  {
+	"num_steps": 12,
+	"target_year": "all"
+  },
+  "us_precip_34w":
+  {
+	"num_steps": 12,
+	"target_year": "all"
+  },
+  "us_tmp2m_56w":
+  {
+	"num_steps": 12,
+	"target_year": "all"
+  },
+  "us_precip_56w":
+  {
+	"num_steps": 12,
+	"target_year": "all"
+  }
+}
+

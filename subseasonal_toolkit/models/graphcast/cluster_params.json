@@ -1,0 +1,13 @@
+{
+    "us":
+    {
+        "default":
+        {
+            "memory": 100,
+            "cores": 16,
+            "hours": 12,
+            "minutes": 0,
+            "environment": 'graphcast2'
+        }
+    }
+}
