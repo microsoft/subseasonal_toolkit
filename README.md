@@ -39,6 +39,8 @@ This package has been tested with the following operating system and Python pair
 + macOS Monterey 12.6.3 with Python 3.9.12
 + Linux CentOS 7 with Python 3.7.9
 
+The code requires AzCopy to run
+
 A complete list of Python dependencies can be found in `setup.cfg`; these dependencies are required upon installation.
 
 ## Getting Started
