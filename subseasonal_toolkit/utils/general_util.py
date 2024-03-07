@@ -180,3 +180,15 @@ def get_current_year():
     now = datetime.datetime.now()
     return now.year
 
+def get_kwargs_from_args_list(args_list):
+    kwargs = {arg.split()[0][2:]: arg.split()[1] for arg in args_list}
+    # Convert numeric values from strings to appropriate types
+    for key, value in kwargs.items():
+        if value.isdigit():
+            kwargs[key] = int(value)  # Convert to int if possible
+        else:
+            try:
+                kwargs[key] = float(value)  # Convert to float if possible
+            except ValueError:
+                pass  # Keep as string if neither int nor float
+    return kwargs

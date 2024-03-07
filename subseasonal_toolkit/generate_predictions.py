@@ -56,6 +56,8 @@ from argparse import ArgumentParser
 from subseasonal_toolkit.utils.general_util import printf, get_task_from_string
 from subseasonal_toolkit.utils.experiments_util import get_target_date
 from subseasonal_toolkit.utils.eval_util import get_target_dates, get_named_targets
+from subseasonal_toolkit.utils.models_util import get_submodel_name
+from subseasonal_toolkit.utils.general_util import get_kwargs_from_args_list
 import json
 import os
 import subprocess
@@ -254,7 +256,10 @@ for model, gt_id, horizon in product(models, gt_iteration, hz_iteration):
     Run dependent job for metric generation on named target_date ranges
     '''
     if not bulk and not abc and target_date_str in get_named_targets():
+        kwargs = get_kwargs_from_args_list(args_list)
+        base_submodel_name = get_submodel_name(
+           model, **kwargs)
         metrics = "wtd_mse" if s2s else "rmse score skill lat_lon_rmse lat_lon_skill lat_lon_error"
-        metrics_cmd=f"{metrics_prefix} {model_dependency} {metrics_script} {gt_id} {horizon} -mn {tuned_prefix}{d2p_prefix}{model} -t {target_date_str} -m {metrics}"
+        metrics_cmd=f"{metrics_prefix} {model_dependency} {metrics_script} {gt_id} {horizon} -mn {tuned_prefix}{d2p_prefix}{model} -sn {base_submodel_name} -t {target_date_str} -m {metrics}"
         printf(f"Running metrics {metrics_cmd}")
         subprocess.call(metrics_cmd, shell=True)
