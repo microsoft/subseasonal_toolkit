@@ -39,6 +39,8 @@ This package has been tested with the following operating system and Python pair
 + macOS Monterey 12.6.3 with Python 3.9.12
 + Linux CentOS 7 with Python 3.7.9
 
+Data to train and evaluate models is made available through the [`subseasonal_data`](https://github.com/microsoft/subseasonal_data) package. To download data through this package, you will need to have the Azure Storage CLI [azcopy](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy) installed on your machine.
+
 A complete list of Python dependencies can be found in `setup.cfg`; these dependencies are required upon installation.
 
 ## Getting Started
