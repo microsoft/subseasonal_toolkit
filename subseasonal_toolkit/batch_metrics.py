@@ -276,10 +276,12 @@ if 'lat_lon_anom' in metric_dfs:
     metric_dfs['lat_lon_anom'] = metric_dfs['lat_lon_anom']   
     
 if 'lat_lon_skill' in metric_dfs:
-    # Calculate skill between u and v vectors
-    l = [(1 - cosine(lat_lon_skill_u.loc[i], lat_lon_skill_v.loc[i])) for i in lat_lon_skill_u.index]  
-    metric_dfs['lat_lon_skill']['lat_lon_skill'] = l
-    metric_dfs['lat_lon_skill'] = metric_dfs['lat_lon_skill'].squeeze()    
+    # If no predictions were made, keep NAs; otherwise calculate lat_lon_skill
+    if num_dates_lls > 0:
+        # Calculate skill between u and v vectors
+        l = [(1 - cosine(lat_lon_skill_u.loc[i], lat_lon_skill_v.loc[i])) for i in lat_lon_skill_u.index]
+        metric_dfs['lat_lon_skill']['lat_lon_skill'] = l
+        metric_dfs['lat_lon_skill'] = metric_dfs['lat_lon_skill'].squeeze()
 
 if 'lat_lon_rmse' in metric_dfs:
     # Replace error sum with RMSE
