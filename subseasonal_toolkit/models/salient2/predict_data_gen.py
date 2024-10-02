@@ -18,6 +18,9 @@ from datetime import datetime, timedelta
 from pkg_resources import resource_filename
 from subseasonal_toolkit.utils.general_util import make_directories
 from subseasonal_toolkit.models.salient2.salient2_util import WEEKS, ONE_WEEK, ONE_DAY, dir_raw_processed, dir_predict_data, year_fraction, array_reduce, ma_interp, mkdir_p, get_target_date, date2datetime, create_input_mei, create_input_mjo, get_date_range
+from subseasonal_data import data_loaders, downloader
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--date', help='Submission week center date (Wednesday)', default=None)
 args = parser.parse_args()
@@ -174,6 +177,9 @@ def download_meto_sst_tenth_week():
     # Download 10th and last week of sst data from MetO (daily data aggregated into weekly data
     # with week starting on Sunday to match weekly noaa sst data
     # sst date is beginning of week (Sunday)
+    meto_dir = os.path.join("data", "ground_truth", "sst_1d") 
+    make_directories(meto_dir) 
+    
     meto_sst_end = end_date
     meto_sst_start = meto_sst_end - ONE_WEEK + ONE_DAY
     print(f'\nDownloading MetO sst data for the 10th and last week:\nfrom {meto_sst_start.date()} to {meto_sst_end.date()}')
@@ -181,14 +187,20 @@ def download_meto_sst_tenth_week():
     
     date_list = [meto_sst_start + ONE_DAY*x for x in range((meto_sst_end - meto_sst_start).days+1)]
     dates_str = [datetime.strftime(d, "%Y%m%d") for d in date_list]
-    filenames_dates = [f for f in os.listdir(os.path.join("data", "ground_truth", "sst_1d")) if f[-11:-3] in dates_str]; 
+
+    meto_filenames = downloader.list_subdir_files(meto_dir)
+    filenames_dates = [f for f in meto_filenames if f[-11:-3] in dates_str]
+    for f in filenames_dates:
+        downloader.download_file(data_subdir=meto_dir, filename=f)
+    
+    filenames_dates = [f for f in os.listdir(meto_dir) if f[-11:-3] in dates_str]; 
     if filenames_dates:
         filenames = []
         for d in dates_str:
             filenames.append(sorted([f for f in filenames_dates if f[-11:-3] == d])[-1])   
         cmd = "cdo mergetime"
         for f in filenames:
-            cmd_src_filename = os.path.join("data", "ground_truth", "sst_1d", f) 
+            cmd_src_filename = os.path.join(meto_dir, f) 
             cmd += f" {cmd_src_filename}"
         cmd_dst_filename = os.path.join(path_meto, "MetO-GLO-PHYS-dm-TEM_recent.nc")
         cmd += f" {cmd_dst_filename}"
