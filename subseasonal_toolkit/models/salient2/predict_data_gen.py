@@ -199,7 +199,7 @@ def download_meto_sst_tenth_week():
         filenames = []
         for d in dates_str:
             filenames.append(sorted([f for f in filenames_dates if f[-11:-3] == d])[-1])   
-        cmd = "/home/tguha/cdo/src/cdo mergetime"
+        cmd = "cdo mergetime"
         for f in filenames:
             cmd_src_filename = os.path.join(os.path.join(os.environ.get("SUBSEASONALDATA_PATH"), "ground_truth", "sst_1d"), f) 
             cmd += f" {cmd_src_filename}"
