@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 from pkg_resources import resource_filename
 from subseasonal_data.utils import load_measurement
 from subseasonal_toolkit.utils.general_util import printf
+from subseasonal_data import data_loaders, downloader
 
 
 ONE_WEEK = timedelta(days=7)
@@ -38,11 +39,11 @@ WEEKS = 10
 
 
 # Set frequently used directories
-dir_predict_data = os.path.join(IN_DIR, "predict-data")
-dir_raw_processed = os.path.join(IN_DIR, "raw-processed")
-dir_submodel_forecasts  = os.path.join(IN_DIR, "submodel_forecasts")
-dir_train_data = os.path.join(IN_DIR, "train-data")
-dir_train_results = os.path.join(IN_DIR, "train-results")
+dir_predict_data = resource_filename("subseasonal_toolkit", os.path.join(IN_DIR, "predict-data"))
+dir_raw_processed = resource_filename("subseasonal_toolkit", os.path.join(IN_DIR, "raw-processed"))
+dir_submodel_forecasts  = resource_filename("subseasonal_toolkit", os.path.join(IN_DIR, "submodel_forecasts"))
+dir_train_data = resource_filename("subseasonal_toolkit", os.path.join(IN_DIR, "train-data"))
+dir_train_results = resource_filename("subseasonal_toolkit", os.path.join(IN_DIR, "train-results"))
 
 # Set training end dates for years 2006-2019 
 training_end_dates = {'2006': '20060726',
@@ -333,9 +334,14 @@ def create_input_sst(date):
             data = np.append(data, dt_sst[-1,:].reshape((1, data.shape[1])), axis=0)   
     return data
 
-def create_input_mei(date):    
+def create_input_mei(date):
+    # need to first download mei vector from NOAA data
+    downloader.download_file(data_subdir="dataframes", filename="gt-mei.h5")
+
     # Create mei vector from NOAA data
-    data = pd.read_hdf(os.path.join("data", "dataframes", "gt-mei.h5"))
+    data = pd.read_hdf(os.path.join(os.environ.get("SUBSEASONALDATA_PATH"), "dataframes", "gt-mei.h5"))
+    #data = pd.read_hdf(os.path.join("data", "dataframes", "gt-mei.h5"))
+
     #offset by 5 weeks due to mei data lag being 30 days
     date_mei = [datetime(d[0].astype(object).year, d[0].astype(object).month, d[0].astype(object).day) - 5*ONE_WEEK for d in date]
     df_mei = pd.DataFrame(columns = ["start_date", "mei"])
@@ -349,9 +355,13 @@ def create_input_mei(date):
         df_mei.loc[d] = data_wk["mei"].mean()
     return df_mei.values
     
-def create_input_mjo(date):        
+def create_input_mjo(date):
+    # need to first download mjo vector from bom.gov.au data
+    downloader.download_file(data_subdir="dataframes", filename="gt-mjo-1d.h5")
+
     # Create mjo vector from bom.gov.au data    
-    data = pd.read_hdf(os.path.join("data", "dataframes", "gt-mjo-1d.h5"))
+    data = pd.read_hdf(os.path.join(os.environ.get("SUBSEASONALDATA_PATH"), "dataframes", "gt-mjo-1d.h5"))
+
     df_mjo = pd.DataFrame(columns = ["start_date", "phase", "amplitude"])
     df_mjo["start_date"] = [datetime(d[0].astype(object).year, d[0].astype(object).month, d[0].astype(object).day) for d in date]
     df_mjo.set_index('start_date', inplace=True)
@@ -381,7 +391,9 @@ def create_output_contest(date, gt_var):
     
     #load gt data
     # Infile and outfile
-    in_file = os.path.join("data", "dataframes", f"gt-{gt_var}-7d.h5")
+    downloader.download_file(data_subdir="dataframes", filename=f"gt-{gt_var}-7d.h5")
+
+    in_file = os.path.join(os.environ.get("SUBSEASONALDATA_PATH"), "dataframes", f"gt-{gt_var}-7d.h5")
     # Load data, apply mask for tmp2m and precip only
     gt = load_measurement(in_file, None)
     # Transform to wide format
@@ -418,7 +430,8 @@ def create_output_east(date, gt_var):
     gt_var = "us_tmp2m" if "latlon" in gt_var_or else gt_var
     
     # Infile and outfile
-    in_file = os.path.join("data", "dataframes", f"gt-{gt_var.replace('east', 'us')}-7d.h5")
+    downloader.download_file(data_subdir="dataframes", filename=f"gt-{gt_var.replace('east', 'us')}-7d.h5")
+    in_file = os.path.join(os.environ.get("SUBSEASONALDATA_PATH"), "dataframes", f"gt-{gt_var.replace('east', 'us')}-7d.h5")
     # Load data, apply mask for tmp2m and precip only
     gt = load_measurement(in_file, None)
     #restric to east latlons
@@ -458,7 +471,8 @@ def create_output_us(date, gt_var):
     gt_var = "us_tmp2m" if "latlon" in gt_var_or else gt_var
     
     # Infile and outfile
-    in_file = os.path.join("data", "dataframes", f"gt-{gt_var}-7d.h5")
+    downloader.download_file(data_subdir="dataframes", filename=f"gt-{gt_var}-7d.h5")
+    in_file = os.path.join(os.environ.get("SUBSEASONALDATA_PATH"), "dataframes", f"gt-{gt_var}-7d.h5")
     # Load data, apply mask for tmp2m and precip only
     gt = load_measurement(in_file, None)
     # Transform to wide format
