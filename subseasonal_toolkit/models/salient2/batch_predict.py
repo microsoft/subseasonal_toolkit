@@ -174,7 +174,8 @@ for deadline_date in deadline_date_objs:
         print(f"	STEP 1: skip -- predict data  for deadline date: {deadline_date_str_predict_data} can be obtained from train data, with end_date_train_data {end_date_train_data_str}")
     else:
         script_step_1 = resource_filename("subseasonal_toolkit", os.path.join("models", "salient2", "predict_data_gen.py"))
-        cmd_step_1 = f"source activate frii_data; python {script_step_1} -d {deadline_date_str_predict_data}; source deactivate"
+        cmd_step_1 =  f"python {script_step_1} -d {deadline_date_str_predict_data}"
+        #cmd_step_1 = f"source activate frii_data; python {script_step_1} -d {deadline_date_str_predict_data}; source deactivate"
         print(f"	STEP 1: {cmd_step_1}")
         subprocess.call(cmd_step_1, shell=True)
 
@@ -222,4 +223,3 @@ for deadline_date in deadline_date_objs:
     
 
     toc()
-
