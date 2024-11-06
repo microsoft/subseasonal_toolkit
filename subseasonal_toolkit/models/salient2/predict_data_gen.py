@@ -184,15 +184,11 @@ def download_meto_sst_tenth_week():
     meto_sst_start = meto_sst_end - ONE_WEEK + ONE_DAY
     print(f'\nDownloading MetO sst data for the 10th and last week:\nfrom {meto_sst_start.date()} to {meto_sst_end.date()}')
     
-    
     date_list = [meto_sst_start + ONE_DAY*x for x in range((meto_sst_end - meto_sst_start).days+1)]
     dates_str = [datetime.strftime(d, "%Y%m%d") for d in date_list]
 
-    meto_filenames = downloader.list_subdir_files(meto_dir)
-    filenames_dates = [f for f in meto_filenames if f[-11:-3] in dates_str]
-    for f in filenames_dates:
-        downloader.download_file(data_subdir=meto_dir, filename=f)
-    
+    downloader.download_dir(data_subdir=os.path.join("ground_truth", "sst_1d"), verbose=True)
+
     filenames_dates = [f for f in os.listdir(meto_dir) if f[-11:-3] in dates_str]; 
     if filenames_dates:
         filenames = []
