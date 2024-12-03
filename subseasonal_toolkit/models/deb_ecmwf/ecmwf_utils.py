@@ -1,5 +1,8 @@
 from scipy.spatial.distance import cdist, euclidean
 
+def mean(X):
+    return np.mean(X, 0)
+
 def geometric_median(X, eps=1e-5):
     """Computes the geometric median of the columns of X, up to a tolerance epsilon.
     The geometric median is the vector that minimizes the mean Euclidean norm to
